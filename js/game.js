@@ -54,6 +54,7 @@
     P.hp = Math.min(st.maxHp, Math.max(1, hpRatio * st.maxHp));
     if (keepRR == null) { P.rerollsLeft = st.rerolls; P.revivesLeft = st.revives; }
     for (const w of P.weapons) w.s = wstats(w);
+    if (P.base) P.base.s = wstats(P.base);
   }
   function wstats(w) {
     const def = G.WEAPONS[w.id];
@@ -85,6 +86,8 @@
     recalc();
     P.hp = P.st.maxHp;
     addWeapon(ch.weapon);
+    P.base = { id: 'base', lvl: 1, t: 0.4, s: null, dealt: 0, kills: 0, since: 0, icon: G.WEAPONS[ch.weapon].icon };
+    P.base.s = wstats(P.base);
     G.save.lastChar = charId; G.saveNow();
     game.state = 'play';
     showBanner(G.t('deploy', { name: ch.name }), G.t('deploySub'), 2.2);
@@ -110,7 +113,7 @@
     if (P.weapons.length < 6) {
       for (const id in G.WEAPONS) {
         const d = G.WEAPONS[id];
-        if (d.evolved || ownedW.has(id) || ownedW.has(d.evo.into)) continue;
+        if (d.evolved || d.hidden || ownedW.has(id) || ownedW.has(d.evo.into)) continue;
         const partner = P.passives[d.evo.need] ? 1.4 : 1;
         pool.push({ type: 'weapon', id, lvl: 1, wgt: 0.75 * partner });
       }
@@ -231,20 +234,16 @@
   }
   function levelBonus() { return 1 + 0.05 * (P.level - 1); } // 레벨이 오를수록 모든 공격이 강해짐 → 숫자가 쑥쑥 커짐
   G.levelBonus = () => (P ? levelBonus() : 1);
+  // 타격마다 적 머리 위에서 숫자가 팡! 하고 튀어 오름 (위로 솟았다가 살짝 떨어짐)
   function addNumber(e, v, crit) {
     if (!G.save.settings.numbers) return;
-    const n = e.num;
-    if (n && !n.done && n.t < 0.32) { // 연타 누적: 숫자가 굴러 올라가며 다시 튀어오름
-      n.v += v; n.t = Math.min(n.t, 0.05); n.hits++; if (n.hits >= 30) n.done = true; n.crit = n.crit || crit; n.x = e.x; n.y = e.y - e.r - 4; n.rot = crit ? rand(-0.18, 0.18) : n.rot;
-      return;
-    }
-    if (texts.length > 150) { if (!crit) return; texts.shift(); }
-    const t = { x: e.x + rand(-3, 3), y: e.y - e.r - 4, v, crit, t: 0, life: crit ? 1.0 : 0.75, dx: rand(-10, 10), hits: 1, rot: crit ? rand(-0.18, 0.18) : 0, kill: false };
+    if (texts.length > 230) { const i = texts.findIndex((x) => !x.crit && !x.hurt && !x.heal); if (crit && i >= 0) texts.splice(i, 1); else if (!crit) return; else texts.shift(); }
+    const t = { x: e.x + rand(-4, 4), y: e.y - e.r - 6, v, crit, t: 0, life: crit ? 0.95 : 0.7, vx: rand(-34, 34), vy: crit ? rand(-120, -95) : rand(-95, -70), hits: 1, rot: crit ? rand(-0.2, 0.2) : rand(-0.06, 0.06), kill: false };
     texts.push(t); e.num = t;
   }
   function killEnemy(e, w) {
     e.dead = true; P.kills++;
-    if (e.num && !e.num.done) { e.num.kill = true; e.num.done = true; e.num.t = Math.min(e.num.t, 0.04); }
+    if (e.num && e.num.t < 0.1) e.num.kill = true;
     combo++; comboT = 2.5; comboPop = 1;
     if (combo === 100 || combo === 300 || combo === 500 || combo % 1000 === 0) { comboFlash = { n: combo, t: 0 }; G.audio.play('levelup'); }
     if (w) w.kills++;
@@ -311,7 +310,7 @@
           const dirSign = full ? 1 : (Math.cos(ang) >= 0 ? 1 : -1);
           const a0 = full ? ang : ang - (s.arcW / 2) * dirSign;
           const a1 = full ? ang + TAU : ang + (s.arcW / 2) * dirSign;
-          attacks.push({ kind: 'arc', w, a0, a1, t: -i * (s.swing + 0.05), dur: s.swing, reach: s.reach * s.areaF, hit: new Set(), icon: def.icon, shock: s.shock, slow: s.slow, knock: s.knock, dmg: s.dmg, sfx: false });
+          attacks.push({ kind: 'arc', w, a0, a1, t: -i * (s.swing + 0.05), dur: s.swing, reach: s.reach * s.areaF, hit: new Set(), icon: w.icon || def.icon, shock: s.shock, slow: s.slow, knock: s.knock, dmg: s.dmg, sfx: false });
         }
         break;
       }
@@ -766,6 +765,7 @@
 
     gridBuild();
     for (const w of P.weapons) { w.t -= dt; if (w.t <= 0) { fire(w); w.t = weaponCooldown(w); } }
+    if (P.base) { P.base.t -= dt; if (P.base.t <= 0) { fire(P.base); P.base.t = weaponCooldown(P.base); } } // 모든 캐릭터 공통 360도 회오리 공격
     updateAttacks(dt);
     updateSpawns(dt);
     gridBuild();
@@ -806,7 +806,7 @@
     const newBest = game.time > b.time;
     G.save.best[P.char] = { time: Math.max(b.time, game.time), kills: Math.max(b.kills, P.kills), level: Math.max(b.level, P.level), won: b.won || won };
     G.saveNow();
-    G.ui && G.ui.showResults({ won, time: game.time, kills: P.kills, level: P.level, bellsPicked: Math.round(P.bells), bonus, total, newBest, weapons: P.weapons.map((w) => ({ id: w.id, lvl: w.lvl, dealt: w.dealt, kills: w.kills, dps: w.dealt / Math.max(1, game.time - w.since) })), passives: Object.assign({}, P.passives) });
+    G.ui && G.ui.showResults({ won, time: game.time, kills: P.kills, level: P.level, bellsPicked: Math.round(P.bells), bonus, total, newBest, weapons: P.weapons.concat(P.base ? [P.base] : []).map((w) => ({ id: w.id, lvl: w.lvl, dealt: w.dealt, kills: w.kills, dps: w.dealt / Math.max(1, game.time - w.since) })), passives: Object.assign({}, P.passives) });
   }
   G.endRun = endRun;
 
@@ -972,7 +972,7 @@
           ctx.globalAlpha = 0.9 * fade; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5 * S;
           ctx.beginPath(); ctx.arc(sx(P.x), sy(P.y - 4), a.reach * 0.92 * S, Math.min(st, a.cur), Math.max(st, a.cur)); ctx.stroke();
           ctx.globalAlpha = 1;
-          const icon = G.WEAPONS[a.w.id].icon;
+          const icon = a.icon || G.WEAPONS[a.w.id].icon;
           const big = G.WEAPONS[a.w.id].evolved ? 1.6 : 1.15;
           drawIconRot(icon, P.x + Math.cos(a.cur) * a.reach * 0.6, P.y - 4 + Math.sin(a.cur) * a.reach * 0.6, a.cur + Math.PI / 4, Math.min(1.7, big * Math.max(1, a.reach / 50)), fade);
           break;
@@ -1048,8 +1048,9 @@
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
     for (const t of texts) {
       const p = t.t / t.life;
-      const rise = (t.crit ? 26 : 16) * U * (1 - (1 - p) * (1 - p));
-      let x = sx(t.x + t.dx * p), y = sy(t.y) - rise;
+      let x, y;
+      if (t.vy != null) { const tt = t.t; x = sx(t.x + t.vx * tt * (1 - p * 0.4)); y = sy(t.y + t.vy * tt + 0.5 * 210 * tt * tt); }
+      else { const rise = 16 * U * (1 - (1 - p) * (1 - p)); x = sx(t.x + (t.dx || 0) * p); y = sy(t.y) - rise; }
       if (t.hurt || t.heal) {
         ctx.globalAlpha = p > 0.7 ? (1 - p) / 0.3 : 1;
         ctx.font = `${Math.round(9 * U)}px ${NUMFONT}`; ctx.lineWidth = 2.4 * U; ctx.strokeStyle = '#4a3328';
@@ -1063,7 +1064,7 @@
       const k = Math.min(1, t.t / 0.16);
       const pop = 1 + (t.crit ? 1.0 : 0.55) * Math.exp(-6 * k) * Math.cos(k * 9);
       if (tier >= 4 || (t.crit && t.v >= 1000)) { x += rand(-1, 1) * U * (1 - k); y += rand(-1, 1) * U * (1 - k); }
-      ctx.globalAlpha = p > 0.72 ? (1 - p) / 0.28 : 1;
+      ctx.globalAlpha = (p > 0.72 ? (1 - p) / 0.28 : 1) * (!t.crit && Math.abs(t.x - P.x) < 12 && Math.abs(t.y - P.y + 8) < 14 ? 0.5 : 1); // 내 캐릭터 위 숫자는 살짝 투명하게
       const fs = Math.round(size * pop);
       ctx.save(); ctx.translate(x, y); if (t.rot) ctx.rotate(t.rot * (1 - k * 0.6));
       // 치명타: 뒤쪽에 터지는 별빛

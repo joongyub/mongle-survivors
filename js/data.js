@@ -71,6 +71,10 @@
       ups: [['공격력 +5', { dmg: 5 }], ['범위 +20%', { area: 0.2 }], ['회전 +1바퀴', { amount: 1 }], ['공격력 +7', { dmg: 7 }], ['쿨타임 -15%', { cdm: -0.15 }], ['공격력 +10, 회전 +1바퀴', { dmg: 10, amount: 1 }]],
       evo: { need: 'cookie', into: 'spoonX' } },
 
+    // ----- 모든 캐릭터 공통 기본기: 360도 회오리 (레벨업 목록에는 안 나옴) -----
+    base: { name: '360° 회오리', icon: 'hammer', kind: 'arc', hidden: true, desc: '내 주변 360도를 쉬지 않고 휘둘러요.',
+      base: { dmg: 11, cd: 0.75, area: 1, amount: 1, knock: 7, reach: 30, arcW: Math.PI * 2, swing: 0.24 }, ups: [] },
+
     // ----- 진화 무기 (최대 레벨 무기 + 짝 패시브 → 보물상자에서 진화) -----
     hammerX: { name: '대왕 복숭아 망치', icon: 'hammer', kind: 'arc', evolved: true, desc: '휘두를 때마다 복숭아 충격파가 터져요!',
       base: { dmg: 165, cd: 0.85, area: 1.75, amount: 2, knock: 26, reach: 34, arcW: 2.8, swing: 0.2, shock: 1 }, ups: [] },
