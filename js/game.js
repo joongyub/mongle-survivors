@@ -309,7 +309,7 @@
     const d = Math.max(1, Math.round(dmg - P.st.armor));
     P.hp -= d; P.iframe = 0.55; P.hurtT = 0.25;
     G.audio.play('hurt'); addShake(2.5);
-    texts.push({ x: P.x, y: P.y - 16, v: d, hurt: true, t: 0, life: 0.7, dx: 0 });
+    texts.push({ x: P.x, y: P.y - 30, v: d, hurt: true, t: 0, life: 0.7, dx: 0 });
     if (P.hp <= 0) {
       if (P.revivesLeft > 0) {
         P.revivesLeft--; P.hp = P.st.maxHp * 0.6; P.iframe = 2.5;
@@ -728,7 +728,7 @@
       if (d < 12) {
         p.dead = true;
         if (p.kind === 'bell') { P.bells += Math.round(p.v * P.st.greed * 10) / 10; G.audio.play('bell'); }
-        else if (p.kind === 'heal') { P.hp = Math.min(P.st.maxHp, P.hp + 30); G.audio.play('heal'); texts.push({ x: P.x, y: P.y - 16, v: '+30', heal: true, t: 0, life: 0.9, dx: 0 }); }
+        else if (p.kind === 'heal') { P.hp = Math.min(P.st.maxHp, P.hp + 30); G.audio.play('heal'); texts.push({ x: P.x, y: P.y - 30, v: '+30', heal: true, t: 0, life: 0.9, dx: 0 }); }
         else if (p.kind === 'magnet') { for (const g of gems) g.mag = true; G.audio.play('magnet'); }
         else if (p.kind === 'chest') { const res = openChest(p.big); G.audio.play(res.evolved ? 'evolve' : 'chest'); game.state = 'chest'; G.ui && G.ui.showChest(res); }
       }
@@ -904,11 +904,9 @@
     const list = [];
     for (const e of enemies) if (onScreen(e, 40)) list.push(e);
     for (const d of decos) if (!d.flat) list.push({ deco: d, y: d.y });
-    list.push(P);
     list.sort((a, b) => a.y - b.y);
     for (const o of list) {
-      if (o === P) drawPlayer();
-      else if (o.deco) {
+      if (o.deco) {
         const s = SPR.deco[o.deco.k];
         const near = Math.abs(P.x - o.deco.x) < s.w / 2 + 4 && P.y < o.deco.y && P.y > o.deco.y - s.h;
         if (near) ctx.globalAlpha = 0.5;
@@ -916,6 +914,7 @@
       } else drawEnemy(o);
     }
     drawAttacks();
+    drawPlayer(); // 내 캐릭터는 공격 잔상 위에 또렷하게
     // 파티클
     for (const p of particles) {
       const al = p.life / p.max;
@@ -962,11 +961,21 @@
     const fr = P.moving ? Math.floor(P.anim) % 2 : Math.floor(game.time * 1.6) % 2;
     const f = frames[fr];
     // 발밑 표시 (혼잡해도 내 캐릭터가 보이도록)
-    ctx.fillStyle = 'rgba(60,90,40,0.35)'; ctx.beginPath(); ctx.ellipse(sx(P.x), sy(P.y + 1), 9 * S, 3.2 * S, 0, 0, TAU); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = Math.max(1, S * 0.6); ctx.beginPath(); ctx.ellipse(sx(P.x), sy(P.y + 1), 11 * S, 4.2 * S, 0, 0, TAU); ctx.stroke();
+    ctx.fillStyle = 'rgba(60,90,40,0.35)'; ctx.beginPath(); ctx.ellipse(sx(P.x), sy(P.y + 1), 11 * S, 3.6 * S, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = Math.max(1, S * 0.6); ctx.beginPath(); ctx.ellipse(sx(P.x), sy(P.y + 1), 13 * S, 4.6 * S, 0, 0, TAU); ctx.stroke();
     if (P.iframe > 0 && Math.floor(game.time * 20) % 2 === 0) ctx.globalAlpha = 0.5;
     const img = P.hurtT > 0.12 ? (P.facing > 0 ? f.wr : f.wl) : P.facing > 0 ? f.r : f.l;
-    drawSpr(img, P.x, P.y + 4, f.w, f.h);
+    if (f.art) { // 일러스트: 걸을 때 통통 튀고 살짝 기울고, 서 있으면 숨쉬듯 말랑
+      const ph = P.moving ? P.anim * 0.9 : game.time * 3;
+      const hop = P.moving ? Math.abs(Math.sin(ph)) * 2.2 : 0;
+      const sq = P.moving ? Math.cos(ph * 2) * 0.05 : Math.sin(ph) * 0.025;
+      const tilt = P.moving ? Math.sin(ph) * 0.07 + P.facing * 0.05 : 0;
+      const w = f.w * (1 - sq * 0.6), h = f.h * (1 + sq);
+      ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.translate(sx(P.x), sy(P.y + 3 - hop)); ctx.rotate(tilt);
+      ctx.drawImage(img, Math.round(-w / 2 * S), Math.round(-h * S), Math.round(w * S), Math.round(h * S));
+      ctx.restore();
+    } else drawSpr(img, P.x, P.y + 4, f.w, f.h);
     ctx.globalAlpha = 1;
     // 체력바
     const bw = 20, bx = P.x - bw / 2, by = P.y + 6;

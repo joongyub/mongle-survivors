@@ -32,6 +32,7 @@ body.ja .btn, body.ja .tg { font-weight: 800; }
 .screen.on { display: flex; }
 .dim { background: rgba(45, 58, 38, 0.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 img.px { image-rendering: pixelated; image-rendering: crisp-edges; }
+img.px[src^="data:image/webp"] { image-rendering: auto; object-fit: contain; }
 .btn { font-family: inherit; font-size: calc(var(--u) * 11); color: var(--ink); background: var(--cream); border: calc(var(--u) * 1.6) solid var(--ink); border-radius: calc(var(--u) * 10); padding: calc(var(--u) * 4) calc(var(--u) * 14); cursor: pointer; box-shadow: 0 calc(var(--u) * 2.5) 0 var(--ink); transition: transform .08s; }
 .btn:active { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 0.5) 0 var(--ink); }
 .btn.green { background: #9fe08a; }
@@ -209,6 +210,7 @@ table.dps img { width: calc(var(--u) * 11); height: calc(var(--u) * 11); vertica
 </div>
 <div id="rotate"><div class="ph"></div><div data-i18n="rotate">휴대폰을 <b>가로</b>로 돌려주세요!<br><small>몽글숲 서바이버즈는 16:9 가로 화면으로 즐겨요</small></div></div>
 
+<script src="js/charart.js"></script>
 <script src="js/sprites.js"></script>
 <script src="js/data.js"></script>
 <script src="js/i18n.js"></script>

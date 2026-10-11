@@ -442,12 +442,29 @@
     return { r: grid.toCanvas(), l: grid.flipX().toCanvas(), wr: grid.silhouette('#ffffff').toCanvas(), wl: grid.silhouette('#ffffff').flipX().toCanvas(), w: grid.w, h: grid.h };
   }
   G.buildSprites = function () {
-    for (const id in CHAR_ART) SPR.char[id] = [pack(chibi(CHAR_ART[id], 0)), pack(chibi(CHAR_ART[id], 1))];
+    for (const id in CHAR_ART) if (!(SPR.char[id] && SPR.char[id].url)) SPR.char[id] = [pack(chibi(CHAR_ART[id], 0)), pack(chibi(CHAR_ART[id], 1))]; // 일러스트가 먼저 불러와졌으면 그대로 둠
     for (const id in ENEMY_ART) SPR.enemy[id] = [pack(ENEMY_ART[id](0)), pack(ENEMY_ART[id](1))];
     for (const id in ICON_ART) { const g = ICON_ART[id](); SPR.icon[id] = { c: g.toCanvas(), w: g.w, h: g.h, wc: g.silhouette('#ffffff').toCanvas() }; }
     for (const id in DECO_ART) { const g = DECO_ART[id](); SPR.deco[id] = { c: g.toCanvas(), w: g.w, h: g.h }; }
     SPR.ground = makeGroundTile();
   };
+
+  // 원본 일러스트 캐릭터: 불러오면 도트 캐릭터를 대신함 (부드럽게 확대/축소해서 그림)
+  const ART_H = 40; // 게임 속 키 (월드 단위)
+  function artFrame(img) {
+    const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    const flip = (src) => { const f = document.createElement('canvas'); f.width = src.width; f.height = src.height; const x = f.getContext('2d'); x.translate(src.width, 0); x.scale(-1, 1); x.drawImage(src, 0, 0); return f; };
+    const white = (src) => { const f = document.createElement('canvas'); f.width = src.width; f.height = src.height; const x = f.getContext('2d'); x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(255,255,255,0.75)'; x.fillRect(0, 0, f.width, f.height); return f; };
+    const wr = white(c);
+    return { r: c, l: flip(c), wr, wl: flip(wr), w: ART_H * c.width / c.height, h: ART_H, art: true };
+  }
+  G.artReady = Promise.all(Object.keys(G.CHAR_ART_IMG || {}).map((id) => new Promise((res) => {
+    const img = new Image();
+    img.onload = () => { try { const f = artFrame(img); SPR.char[id] = [f, f]; SPR.char[id].url = G.CHAR_ART_IMG[id]; } catch (e) {} res(); };
+    img.onerror = () => res();
+    img.src = G.CHAR_ART_IMG[id];
+  })));
 
   // 잔디 바닥 타일 (64x64, 반복)
   function makeGroundTile() {

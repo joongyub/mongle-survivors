@@ -7,7 +7,7 @@
   const ui = (G.ui = {});
   const urlCache = {};
   const iconURL = (k, s = 6) => urlCache['i' + k + s] || (urlCache['i' + k + s] = G.spriteURL(G.SPR.icon[k].c, s));
-  const charURL = (id, f = 0, s = 6) => urlCache['c' + id + f + s] || (urlCache['c' + id + f + s] = G.spriteURL(G.SPR.char[id][f].r, s));
+  const charURL = (id, f = 0, s = 6) => (G.SPR.char[id] && G.SPR.char[id].url) || urlCache['c' + id + f + s] || (urlCache['c' + id + f + s] = G.spriteURL(G.SPR.char[id][f].r, s));
 
   // 터치 기기는 화면이 작으니 글자/버튼을 조금 크게
   G.uiScale = matchMedia('(pointer: coarse)').matches ? 1.3 : 1;
@@ -276,5 +276,5 @@
   document.addEventListener('contextmenu', (e) => e.preventDefault());
 
   // 폰트 로드 후 타이틀
-  (document.fonts && document.fonts.load ? document.fonts.load('20px Jua').catch(() => {}) : Promise.resolve()).finally(showTitle);
+  (document.fonts && document.fonts.load ? document.fonts.load('20px Jua').catch(() => {}) : Promise.resolve()).then(() => Promise.race([G.artReady, new Promise((r) => setTimeout(r, 3000))])).finally(showTitle);
 })();
