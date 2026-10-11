@@ -45,6 +45,11 @@
     show('title');
     $('tBells').textContent = Math.floor(G.save.bells).toLocaleString();
     const pa = $('parade'); pa.innerHTML = '';
+    // 아이폰 사파리(주소창 있는 상태)에서만 '홈 화면에 추가' 안내
+    const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
+    let framed = true; try { framed = window.self !== window.top; } catch (e) {}
+    $('iosTip').classList.toggle('on', ios && !standalone && !framed);
     G.CHARS.forEach((c, i) => { const im = document.createElement('img'); im.className = 'px'; im.src = charURL(c.id); im.style.animationDelay = i * 0.08 + 's'; pa.appendChild(im); });
   }
   function firstGesture() {

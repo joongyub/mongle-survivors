@@ -1,0 +1,14 @@
+{
+  "name": "몽글숲 서바이버즈",
+  "short_name": "몽글숲",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#2d3a26",
+  "theme_color": "#a9dc8c",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

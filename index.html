@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="몽글숲">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#a9dc8c">
 <title>몽글숲 서바이버즈</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,6 +51,8 @@ img.px { image-rendering: pixelated; image-rendering: crisp-edges; }
 #parade img { width: calc(var(--u) * 40); height: calc(var(--u) * 40); animation: hop 0.8s ease-in-out infinite; }
 @keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--u) * -5)); } }
 #title .bells { position: absolute; top: calc(var(--u) * 10); right: calc(var(--u) * 12); font-size: calc(var(--u) * 10); background: var(--cream); border: calc(var(--u)*1.2) solid var(--ink); border-radius: calc(var(--u)*8); padding: calc(var(--u)*2) calc(var(--u)*8); }
+#iosTip { position: absolute; bottom: calc(var(--u) * 20); left: 50%; transform: translateX(-50%); white-space: nowrap; background: #fffaf0; border: calc(var(--u) * 1.5) solid var(--ink); border-radius: calc(var(--u) * 6); padding: calc(var(--u) * 4) calc(var(--u) * 7); font-size: calc(var(--u) * 7.5); line-height: 1.35; text-align: center; box-shadow: 0 calc(var(--u) * 2) 0 rgba(0,0,0,.2); display: none; }
+#iosTip.on { display: block; }
 #title .hint { position: absolute; bottom: calc(var(--u) * 8); font-size: calc(var(--u) * 7); color: #3c5a2e; }
 .cloud { position: absolute; width: calc(var(--u) * 60); height: calc(var(--u) * 18); background: #fff; border-radius: calc(var(--u) * 10); opacity: .7; animation: drift 40s linear infinite; }
 @keyframes drift { from { transform: translateX(calc(var(--u) * -100)); } to { transform: translateX(calc(var(--u) * 700)); } }
@@ -143,6 +149,7 @@ table.dps img { width: calc(var(--u) * 11); height: calc(var(--u) * 11); vertica
     <div class="cloud" style="top:12%;animation-delay:-5s"></div>
     <div class="cloud" style="top:30%;animation-delay:-22s;opacity:.5"></div>
     <button class="btn small" id="bLang" data-i18n="langBtn">🌐 언어: 한국어</button>
+    <div id="iosTip" data-i18n="iosTip">📱 전체화면으로 하려면: 공유 버튼(□↑) → 「홈 화면에 추가」 → 홈 화면의 몽글숲 아이콘으로 실행</div>
     <div class="bells">🔔 <span id="tBells">0</span> <span data-i18n="bellUnit">벨</span></div>
     <div id="parade"></div>
     <div class="logo" data-i18n="gameName">몽글숲 <b>서바이버즈</b></div>
