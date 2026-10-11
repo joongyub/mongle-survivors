@@ -40,7 +40,7 @@
   }
 
   const SFX = {
-    hit() { if (throttle('hit', 45)) { tone(380 + Math.random() * 120, 0.06, 'square', 0.07, 0.5); noise(0.05, 0.08, 2000); } },
+    hit() { if (throttle('hit', 45)) { tone(380 + Math.random() * 120, 0.06, 'square', 0.07, 0.5); tone(130 + Math.random() * 30, 0.07, 'sine', 0.12, 0.4); noise(0.05, 0.09, 2200); } },
     crit() { if (throttle('crit', 70)) { tone(900, 0.08, 'square', 0.08, 0.6); tone(1400, 0.1, 'triangle', 0.08, 0.8, 0.02); } },
     kill() { if (throttle('kill', 40)) { tone(600 + Math.random() * 200, 0.07, 'triangle', 0.08, 1.8); } },
     swing() { if (throttle('swing', 60)) noise(0.12, 0.09, 900); },
