@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#a9dc8c">
+<title>몽글숲 서바이버즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --u: 2px;
+  --ink: #4a3328; --cream: #fffaf0; --paper: #fff4e0; --leaf: #7cc46a; --leaf2: #5aa64a;
+  --pink: #ff8fab; --sky: #9cc6f2; --gold: #ffd84a; --bg: #2d3a26;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+body { font-family: 'Jua', 'Arial Rounded MT Bold', 'Apple SD Gothic Neo', sans-serif; color: var(--ink); }
+body.ja { font-family: 'M PLUS Rounded 1c', 'Jua', 'Hiragino Maru Gothic ProN', sans-serif; font-weight: 800; }
+body.ja .btn, body.ja .tg { font-weight: 800; }
+#bLang { position: absolute; top: calc(var(--u) * 10); left: calc(var(--u) * 12); }
+#stage { position: absolute; overflow: hidden; background: #a9dc8c; border-radius: calc(var(--u) * 2); }
+#cv { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 5; }
+.screen.on { display: flex; }
+.dim { background: rgba(45, 58, 38, 0.55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+img.px { image-rendering: pixelated; image-rendering: crisp-edges; }
+.btn { font-family: inherit; font-size: calc(var(--u) * 11); color: var(--ink); background: var(--cream); border: calc(var(--u) * 1.6) solid var(--ink); border-radius: calc(var(--u) * 10); padding: calc(var(--u) * 4) calc(var(--u) * 14); cursor: pointer; box-shadow: 0 calc(var(--u) * 2.5) 0 var(--ink); transition: transform .08s; }
+.btn:active { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 0.5) 0 var(--ink); }
+.btn.green { background: #9fe08a; }
+.btn.pink { background: #ffc2d1; }
+.btn.yellow { background: #ffe58a; }
+.btn.small { font-size: calc(var(--u) * 8); padding: calc(var(--u) * 2.5) calc(var(--u) * 9); }
+.btn:disabled { opacity: .45; }
+.panel { background: var(--paper); border: calc(var(--u) * 1.6) solid var(--ink); border-radius: calc(var(--u) * 10); box-shadow: 0 calc(var(--u) * 3) 0 rgba(74,51,40,.6); }
+.row { display: flex; gap: calc(var(--u) * 8); align-items: center; justify-content: center; }
+
+/* 타이틀 */
+#title { background: radial-gradient(ellipse at 50% 120%, #8ccf72 0%, #a9dc8c 45%, #cdeec0 100%); }
+#title .logo { font-size: calc(var(--u) * 34); color: #fff; text-shadow: 0 calc(var(--u)*1.5) 0 var(--ink), calc(var(--u)*1.5) 0 0 var(--ink), calc(var(--u)*-1.5) 0 0 var(--ink), 0 calc(var(--u)*-1.5) 0 var(--ink), 0 calc(var(--u)*4) 0 rgba(74,51,40,.35); letter-spacing: calc(var(--u) * 0.5); line-height: 1; }
+#title .logo b { color: #ffd0dc; font-weight: normal; }
+#title .sub { font-size: calc(var(--u) * 10); margin: calc(var(--u) * 6) 0 calc(var(--u) * 10); color: #3c5a2e; }
+#parade { display: flex; gap: calc(var(--u) * 4); margin-bottom: calc(var(--u) * 12); height: calc(var(--u) * 46); align-items: flex-end; }
+#parade img { width: calc(var(--u) * 40); height: calc(var(--u) * 40); animation: hop 0.8s ease-in-out infinite; }
+@keyframes hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(calc(var(--u) * -5)); } }
+#title .bells { position: absolute; top: calc(var(--u) * 10); right: calc(var(--u) * 12); font-size: calc(var(--u) * 10); background: var(--cream); border: calc(var(--u)*1.2) solid var(--ink); border-radius: calc(var(--u)*8); padding: calc(var(--u)*2) calc(var(--u)*8); }
+#title .hint { position: absolute; bottom: calc(var(--u) * 8); font-size: calc(var(--u) * 7); color: #3c5a2e; }
+.cloud { position: absolute; width: calc(var(--u) * 60); height: calc(var(--u) * 18); background: #fff; border-radius: calc(var(--u) * 10); opacity: .7; animation: drift 40s linear infinite; }
+@keyframes drift { from { transform: translateX(calc(var(--u) * -100)); } to { transform: translateX(calc(var(--u) * 700)); } }
+
+/* 캐릭터 선택 */
+#select { background: linear-gradient(#cdeec0, #a9dc8c); padding: calc(var(--u) * 8); }
+#select h2, #shop h2 { margin: 0 0 calc(var(--u) * 5); font-size: calc(var(--u) * 16); font-weight: normal; }
+.selwrap { display: flex; gap: calc(var(--u) * 8); width: 100%; height: calc(100% - var(--u) * 26); }
+#chargrid { flex: 1.35; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: calc(var(--u) * 5); }
+.cc { background: var(--cream); border: calc(var(--u) * 1.4) solid var(--ink); border-radius: calc(var(--u) * 8); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: transform .1s; padding: calc(var(--u)*2); }
+.cc img.ch { width: calc(var(--u) * 48); height: calc(var(--u) * 48); }
+.cc .nm { font-size: calc(var(--u) * 8); white-space: nowrap; }
+.cc .wp { position: absolute; top: calc(var(--u) * 3); right: calc(var(--u) * 3); width: calc(var(--u) * 13); height: calc(var(--u) * 13); }
+.cc .star { position: absolute; top: calc(var(--u) * 2); left: calc(var(--u) * 4); font-size: calc(var(--u) * 8); }
+.cc.sel { transform: translateY(calc(var(--u) * -2)); box-shadow: 0 0 0 calc(var(--u) * 2) var(--gold), 0 calc(var(--u) * 3) 0 var(--ink); }
+#chardetail { flex: 1; padding: calc(var(--u) * 8); display: flex; flex-direction: column; gap: calc(var(--u) * 4); }
+#chardetail .top { display: flex; gap: calc(var(--u) * 6); align-items: center; }
+#chardetail .top img { width: calc(var(--u) * 64); height: calc(var(--u) * 64); background: radial-gradient(circle, #fff 30%, transparent 70%); }
+#chardetail .name { font-size: calc(var(--u) * 15); }
+#chardetail .en { font-size: calc(var(--u) * 7); opacity: .6; }
+#chardetail .story { font-size: calc(var(--u) * 7.5); line-height: 1.4; }
+.tag { display: inline-flex; align-items: center; gap: calc(var(--u) * 3); font-size: calc(var(--u) * 7.5); background: #fff; border: calc(var(--u)) solid var(--ink); border-radius: calc(var(--u) * 6); padding: calc(var(--u) * 1.5) calc(var(--u) * 5); }
+.tag img { width: calc(var(--u) * 12); height: calc(var(--u) * 12); }
+#chardetail .best { font-size: calc(var(--u) * 7); opacity: .75; }
+#chardetail .go { margin-top: auto; align-self: stretch; font-size: calc(var(--u) * 14); }
+
+/* 레벨업 */
+#levelup h2, #chest h2, #pause h2, #results h2 { font-size: calc(var(--u) * 22); margin: 0 0 calc(var(--u) * 8); color: #fff3a0; font-weight: normal; text-shadow: 0 calc(var(--u)*1.5) 0 var(--ink), calc(var(--u)*1.5) 0 0 var(--ink), calc(var(--u)*-1.5) 0 0 var(--ink), 0 calc(var(--u)*-1.5) 0 var(--ink); }
+#cards { display: flex; gap: calc(var(--u) * 7); }
+.card { width: calc(var(--u) * 112); height: calc(var(--u) * 150); background: var(--cream); border: calc(var(--u) * 1.6) solid var(--ink); border-radius: calc(var(--u) * 10); display: flex; flex-direction: column; align-items: center; padding: calc(var(--u) * 7) calc(var(--u) * 6); cursor: pointer; position: relative; box-shadow: 0 calc(var(--u) * 3) 0 var(--ink); animation: cardin .35s cubic-bezier(.2,1.6,.4,1) both; }
+.card:hover, .card.focus { transform: translateY(calc(var(--u) * -4)); box-shadow: 0 0 0 calc(var(--u) * 2) var(--gold), 0 calc(var(--u) * 5) 0 var(--ink); }
+@keyframes cardin { from { transform: scale(.6) translateY(calc(var(--u) * 20)); opacity: 0; } }
+.card .ic { width: calc(var(--u) * 40); height: calc(var(--u) * 40); margin: calc(var(--u) * 4) 0; background: radial-gradient(circle, #fff 40%, transparent 72%); }
+.card .kd { font-size: calc(var(--u) * 6.5); background: var(--sky); color: #fff; border-radius: calc(var(--u) * 5); padding: calc(var(--u) * 0.8) calc(var(--u) * 5); text-shadow: 0 calc(var(--u)*0.6) 0 rgba(0,0,0,.25); }
+.card .kd.item { background: #b9a2e8; }
+.card .kd.other { background: #e8a24a; }
+.card .nm { font-size: calc(var(--u) * 10); margin-top: calc(var(--u) * 3); text-align: center; }
+.card .lv { font-size: calc(var(--u) * 7); color: #8a6a50; }
+.card .tx { font-size: calc(var(--u) * 7.3); text-align: center; margin-top: calc(var(--u) * 4); line-height: 1.35; }
+.card .new { position: absolute; top: calc(var(--u) * -6); left: calc(var(--u) * -6); background: var(--pink); color: #fff; font-size: calc(var(--u) * 7); padding: calc(var(--u) * 1.5) calc(var(--u) * 5); border-radius: calc(var(--u) * 6); border: calc(var(--u)) solid var(--ink); transform: rotate(-8deg); }
+.card .evo { position: absolute; bottom: calc(var(--u) * -6); background: var(--gold); font-size: calc(var(--u) * 6.5); padding: calc(var(--u) * 1.2) calc(var(--u) * 5); border-radius: calc(var(--u) * 6); border: calc(var(--u)) solid var(--ink); white-space: nowrap; }
+.card .key { position: absolute; top: calc(var(--u) * 3); right: calc(var(--u) * 5); font-size: calc(var(--u) * 6); opacity: .4; }
+.pips { display: flex; gap: calc(var(--u) * 1.5); margin-top: calc(var(--u) * 2); }
+.pips i { width: calc(var(--u) * 5); height: calc(var(--u) * 5); border-radius: 50%; border: calc(var(--u) * 0.8) solid var(--ink); background: #fff; }
+.pips i.f { background: var(--gold); }
+.lvb { font-size: calc(var(--u) * 8); color: #fff; margin: calc(var(--u) * -5) 0 calc(var(--u) * 8); text-shadow: 0 calc(var(--u)*0.8) 0 var(--ink); }
+.lvbtns { margin-top: calc(var(--u) * 12); }
+
+/* 보물상자 */
+#chest .panel { padding: calc(var(--u) * 10) calc(var(--u) * 16); display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 5); min-width: calc(var(--u) * 200); }
+#chest .big { width: calc(var(--u) * 56); height: calc(var(--u) * 56); animation: wob .6s ease-in-out infinite alternate; }
+@keyframes wob { from { transform: rotate(-6deg) scale(1); } to { transform: rotate(6deg) scale(1.08); } }
+#chest .line { display: flex; align-items: center; gap: calc(var(--u) * 5); font-size: calc(var(--u) * 9); }
+#chest .line img { width: calc(var(--u) * 20); height: calc(var(--u) * 20); }
+#chest .evot { font-size: calc(var(--u) * 13); color: #e8475a; }
+
+/* 일시정지 & 결과 */
+#pause .panel, #results .panel { padding: calc(var(--u) * 10) calc(var(--u) * 16); display: flex; flex-direction: column; gap: calc(var(--u) * 6); align-items: center; }
+.toggles { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 4); }
+.tg { font-size: calc(var(--u) * 8); padding: calc(var(--u) * 3) calc(var(--u) * 8); border: calc(var(--u) * 1.2) solid var(--ink); border-radius: calc(var(--u) * 7); background: #fff; cursor: pointer; }
+.tg.on { background: #9fe08a; }
+#results .panel { min-width: calc(var(--u) * 330); max-height: 94%; }
+.stats { display: flex; gap: calc(var(--u) * 10); font-size: calc(var(--u) * 9); }
+.stats div { text-align: center; } .stats b { display: block; font-size: calc(var(--u) * 14); font-weight: normal; }
+table.dps { border-collapse: collapse; font-size: calc(var(--u) * 7.5); width: 100%; }
+table.dps td, table.dps th { padding: calc(var(--u) * 1.2) calc(var(--u) * 5); text-align: right; font-weight: normal; }
+table.dps th { opacity: .6; } table.dps td:first-child, table.dps th:first-child { text-align: left; }
+table.dps img { width: calc(var(--u) * 11); height: calc(var(--u) * 11); vertical-align: middle; margin-right: calc(var(--u) * 3); }
+.bellsum { font-size: calc(var(--u) * 9); background: #fff3c4; border-radius: calc(var(--u) * 6); padding: calc(var(--u) * 3) calc(var(--u) * 10); }
+
+/* 상점 */
+#shop { background: linear-gradient(#ffe9c9, #f8d9a8); padding: calc(var(--u) * 8); }
+#shopgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: calc(var(--u) * 5); width: 100%; }
+.si { background: var(--cream); border: calc(var(--u) * 1.4) solid var(--ink); border-radius: calc(var(--u) * 8); padding: calc(var(--u) * 5); display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 2); cursor: pointer; }
+.si img { width: calc(var(--u) * 26); height: calc(var(--u) * 26); }
+.si .nm { font-size: calc(var(--u) * 9); } .si .ds { font-size: calc(var(--u) * 6.5); text-align: center; min-height: 2.6em; }
+.si .cost { font-size: calc(var(--u) * 7.5); background: #fff3c4; border-radius: calc(var(--u) * 5); padding: calc(var(--u) * 1) calc(var(--u) * 5); }
+.si.maxed .cost { background: #c8f0b8; }
+.si.cant { opacity: .6; }
+#shop .bells { font-size: calc(var(--u) * 11); margin-bottom: calc(var(--u) * 5); }
+
+/* 회전 안내 */
+#rotate { position: fixed; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; background: #a9dc8c; font-size: 20px; text-align: center; gap: 14px; padding: 20px; }
+#rotate .ph { width: 60px; height: 100px; border: 5px solid var(--ink); border-radius: 12px; animation: rot 1.6s ease-in-out infinite; background: var(--cream); }
+@keyframes rot { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+
+  <div id="title" class="screen on">
+    <div class="cloud" style="top:12%;animation-delay:-5s"></div>
+    <div class="cloud" style="top:30%;animation-delay:-22s;opacity:.5"></div>
+    <button class="btn small" id="bLang" data-i18n="langBtn">🌐 언어: 한국어</button>
+    <div class="bells">🔔 <span id="tBells">0</span> <span data-i18n="bellUnit">벨</span></div>
+    <div id="parade"></div>
+    <div class="logo" data-i18n="gameName">몽글숲 <b>서바이버즈</b></div>
+    <div class="sub" data-i18n="sub">귀여운 무기로 몰려오는 짐승들을 막아내요!</div>
+    <div class="row">
+      <button class="btn green" id="bStart" data-i18n="start">시작하기</button>
+      <button class="btn yellow" id="bShop" data-i18n="shop">벨 상점</button>
+    </div>
+    <div class="hint" data-i18n="hint">PC: WASD/방향키 이동 · ESC 일시정지  |  모바일: 화면을 드래그해서 이동</div>
+  </div>
+
+  <div id="select" class="screen">
+    <h2 data-i18n="selTitle">함께 모험할 친구를 골라요</h2>
+    <div class="selwrap">
+      <div id="chargrid"></div>
+      <div id="chardetail" class="panel"></div>
+    </div>
+    <button class="btn small" id="bSelBack" data-i18n="back" style="position:absolute;left:calc(var(--u)*8);top:calc(var(--u)*6)">← 뒤로</button>
+  </div>
+
+  <div id="shop" class="screen">
+    <h2 data-i18n="shopTitle">벨 상점 · 영구 강화</h2>
+    <div class="bells">🔔 <span id="sBells">0</span> <span data-i18n="bellUnit">벨</span></div>
+    <div id="shopgrid"></div>
+    <button class="btn small" id="bShopBack" data-i18n="back" style="position:absolute;left:calc(var(--u)*8);top:calc(var(--u)*6)">← 뒤로</button>
+  </div>
+
+  <div id="levelup" class="screen dim">
+    <h2 data-i18n="levelUp">레벨 업!</h2>
+    <div id="lvBonus" class="lvb"></div>
+    <div id="cards"></div>
+    <div class="row lvbtns">
+      <button class="btn small yellow" id="bReroll">🍀 다시 뽑기</button>
+      <button class="btn small" id="bSkip" data-i18n="skip">건너뛰기 (+10벨)</button>
+    </div>
+  </div>
+
+  <div id="chest" class="screen dim">
+    <div class="panel" id="chestPanel"></div>
+  </div>
+
+  <div id="pause" class="screen dim">
+    <div class="panel">
+      <h2 data-i18n="pauseTitle">잠깐 쉬어요</h2>
+      <div id="pauseBuild" class="row" style="flex-wrap:wrap;max-width:calc(var(--u)*260)"></div>
+      <div class="toggles" id="toggles"></div>
+      <div class="row">
+        <button class="btn green" id="bResume" data-i18n="resume">계속하기</button>
+        <button class="btn pink small" id="bQuit" data-i18n="quit">그만두기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results" class="screen dim">
+    <div class="panel" id="resPanel"></div>
+  </div>
+</div>
+<div id="rotate"><div class="ph"></div><div data-i18n="rotate">휴대폰을 <b>가로</b>로 돌려주세요!<br><small>몽글숲 서바이버즈는 16:9 가로 화면으로 즐겨요</small></div></div>
+
+<script src="js/sprites.js"></script>
+<script src="js/data.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
