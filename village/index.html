@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>몽글숲 마을</title>
+<meta name="theme-color" content="#bfe6a8">
+<meta name="description" content="동물 친구들과 농사짓고 건물을 지으며 키우는 힐링 마을 게임">
+<meta property="og:title" content="몽글숲 마을">
+<meta property="og:description" content="동물 친구들과 농사짓고 건물을 지으며 키우는 힐링 마을 게임">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap">
+<link rel="stylesheet" href="css/ui.css">
+</head>
+<body>
+<!-- 게임 화면(Phaser 캔버스)이 들어가는 곳 -->
+<div id="game"></div>
+
+<!-- 화면 위에 겹쳐지는 메뉴(HTML) -->
+<div id="ui">
+  <!-- 타이틀: 촌장 고르기 -->
+  <section id="title" class="screen">
+    <div class="title-card">
+      <h1 class="logo">몽글숲 마을</h1>
+      <p class="subtitle" data-i18n="title.subtitle"></p>
+      <div id="continueBox" class="continue-box hidden">
+        <img id="contImg" alt="">
+        <div class="cont-text"><b id="contInfo"></b><small id="contWhen"></small></div>
+        <div class="cont-btns">
+          <button id="continueBtn" class="btn primary big" data-i18n="title.continue"></button>
+          <button id="newGameBtn" class="btn" data-i18n="title.newGame"></button>
+        </div>
+      </div>
+      <div id="newBox">
+      <p id="newWarn" class="new-warn hidden" data-i18n="title.newWarn"></p>
+      <h2 data-i18n="title.pickMayor"></h2>
+      <div id="mayorList" class="mayor-list"></div>
+      <p id="mayorInfo" class="mayor-info"></p>
+      <label class="village-name">
+        <span data-i18n="title.villageName"></span>
+        <input id="villageName" maxlength="10" autocomplete="off">
+      </label>
+      <div class="start-row">
+        <button id="backBtn" class="btn hidden" data-i18n="title.back"></button>
+        <button id="startBtn" class="btn primary big" data-i18n="title.start"></button>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 마을 화면 위 HUD -->
+  <section id="hud" class="hidden">
+    <div class="topbar">
+      <div class="res"><span class="ico">🪙</span><b id="coinText">0</b></div>
+      <div class="res"><span class="ico">🪵</span><b id="woodText">0</b></div>
+      <div class="res"><span class="ico">🪨</span><b id="stoneText">0</b></div>
+      <button class="res builder" id="builderRes" aria-label="일꾼"><span class="ico">🔨</span><b id="builderText">0/2</b></button>
+      <div class="rank">
+        <span id="rankName"></span>
+        <div class="gauge"><i id="rankGauge"></i></div>
+      </div>
+      <div id="clockText" class="clock"></div>
+      <button id="muteBtn" class="btn icon" aria-label="소리">🔊</button>
+    </div>
+    <div class="village-title" id="villageTitle"></div>
+    <div class="zoom-tools">
+      <button id="zoomIn" class="btn icon" aria-label="확대">＋</button>
+      <button id="zoomOut" class="btn icon" aria-label="축소">－</button>
+      <button id="centerBtn" class="btn icon" aria-label="내 캐릭터로">🎯</button>
+    </div>
+    <div id="holdChip" class="hold-chip hidden"><span id="holdText"></span><small data-i18n="farm.holdHint"></small><button id="holdCancel" class="btn icon" aria-label="내려놓기">✕</button></div>
+    <div id="tutorial" class="tutorial hidden"></div>
+    <nav class="bottombar" id="menuBar"></nav>
+    <!-- 건물 놓기 모드 -->
+    <div id="placeBar" class="place-bar">
+      <div class="place-info"><b id="placeName"></b><small id="placeHint"></small></div>
+      <div class="place-btns">
+        <button id="placeRotate" class="btn">🔄 <span data-i18n="build.rotate"></span></button>
+        <button id="placeCancel" class="btn">✕ <span data-i18n="build.cancel"></span></button>
+        <button id="placeOk" class="btn primary">✓ <span id="placeOkText"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+</div>
+
+<script src="lib/phaser.min.js"></script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
