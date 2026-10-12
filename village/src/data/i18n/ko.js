@@ -210,4 +210,15 @@ export default {
   'tut.say.4': '이제 첫 건물을 지어보자! 나무랑 돌이 필요해',
   'tut.say.6': '재료가 다 모였다! 건설 버튼으로 창고를 짓자',
   'tut.say.8': '첫 건물 완성! 가방이 10칸 늘었어',
+
+  // 언어 선택 등
+  'title.logo': '몽글숲 마을',
+  'title.lang': '언어',
+  'settings.lang': '언어 / 言語',
+  'shop.qty': '{n}개',
+  'shop.each': '1개',
+  'time.ago': '{time} 전',
+  'time.s': '{n}초', 'time.m': '{n}분', 'time.h': '{n}시간', 'time.hm': '{h}시간 {m}분',
+  'clock.am': '오전', 'clock.pm': '오후',
+  'aria.builders': '일꾼', 'aria.sound': '소리', 'aria.zoomIn': '확대', 'aria.zoomOut': '축소', 'aria.center': '내 캐릭터로', 'aria.drop': '내려놓기',
 };

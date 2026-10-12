@@ -2,6 +2,8 @@
 import { BootScene } from './scenes/BootScene.js';
 import { VillageScene } from './scenes/VillageScene.js';
 import { applyI18n, t } from './i18n.js';
+import { makeObjects } from './view/textures.js';
+import { makeBuildingArt } from './view/buildingArt.js';
 import { showTitle } from './ui/title.js';
 import { showHud } from './ui/hud.js';
 import { showAway } from './ui/away.js';
@@ -22,7 +24,7 @@ applyI18n();
 
 // 글꼴을 먼저 불러와야 코드로 그리는 간판 글씨가 예쁘게 나옴 (그래서 글꼴 → 게임 순서로 시작)
 const fontReady = Promise.race([
-  document.fonts?.load('20px Jua') ?? Promise.resolve(),
+  Promise.all([document.fonts?.load('20px Jua'), document.fonts?.load('20px "M PLUS Rounded 1c"', 'あ村')]),
   new Promise(r => setTimeout(r, 1500)),
 ]);
 
@@ -63,6 +65,8 @@ game.events.once('boot-done', async () => {
   try { saved = await SaveService.peek(); } catch { saved = null; }
   showTitle({
     saved,
+    // 언어를 바꾸면 마을회관 간판 등 그림 속 글자를 다시 그림
+    onLang: () => { const boot = game.scene.getScene('Boot'); makeObjects(boot); makeBuildingArt(boot); },
     onContinue: async () => {
       const ok = await SaveService.load().catch(() => false);
       if (!ok) { toast(t('settings.import.broken')); return; }

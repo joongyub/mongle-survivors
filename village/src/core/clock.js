@@ -40,9 +40,9 @@ export function skyTint(t = now()) {
   return { color: 0x3a4a9a, alpha: 0.24 };
 }
 
-export function clockText(t = now()) {
+export function clockText(t = now(), am = '오전', pm = '오후') {
   const d = new Date(t);
   const h = d.getHours(), m = String(d.getMinutes()).padStart(2, '0');
-  const ampm = h < 12 ? '오전' : '오후';
+  const ampm = h < 12 ? am : pm;
   return `${ampm} ${((h + 11) % 12) + 1}:${m}`;
 }

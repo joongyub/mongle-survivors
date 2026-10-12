@@ -100,12 +100,5 @@ export function sell(inv, itemId, n, price) {
   return { ok: true, gain: price * n };
 }
 
-// "1시간 5분" 같은 글자로
-export function formatLeft(ms) {
-  const s = Math.ceil(ms / 1000);
-  if (s < 60) return `${s}초`;
-  const m = Math.ceil(s / 60);
-  if (m < 60) return `${m}분`;
-  const h = Math.floor(m / 60), mm = m % 60;
-  return mm ? `${h}시간 ${mm}분` : `${h}시간`;
-}
+// 남은 시간 글자는 언어마다 달라서 i18n.js에 있어
+export { formatLeft } from '../i18n.js';

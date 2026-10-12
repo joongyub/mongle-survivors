@@ -2,6 +2,7 @@
 // 화질이 깨지지 않게 실제 크기의 2배(RES)로 그린 뒤 반으로 줄여서 써.
 // 나중에 진짜 그림 파일이 생기면 data/assets.js에서 바꿔 끼우면 돼.
 import { TILE } from '../data/map.js';
+import { t, FONT } from '../i18n.js';
 
 export const RES = 2;
 const S = TILE * RES;   // 그림을 그리는 실제 픽셀 크기
@@ -222,7 +223,7 @@ export function makeObjects(scene) {
     g.fillStyle = '#a5764f'; roundRect(g, S / 2 - 5, S * 0.55, 10, S * 0.6, 4); g.fill();
     g.fillStyle = '#d9a873'; roundRect(g, S * 0.14, S * 0.22, S * 0.72, S * 0.42, 10); g.fill();
     g.fillStyle = '#ecc595'; roundRect(g, S * 0.18, S * 0.26, S * 0.64, S * 0.34, 8); g.fill();
-    g.fillStyle = '#8a5f3e'; g.font = `${S * 0.2}px Jua, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#8a5f3e'; g.font = `${S * 0.2}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText('→ 🌉', S / 2, S * 0.43);
     add(scene, 'sign', c);
   }
@@ -256,8 +257,8 @@ export function makeObjects(scene) {
     }
     // 간판
     g.fillStyle = '#8fd19e'; roundRect(g, w / 2 - S * 0.62, base - S * 1.62, S * 1.24, S * 0.34, 12); g.fill();
-    g.fillStyle = '#fff'; g.font = `${S * 0.22}px Jua, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText('마을회관', w / 2, base - S * 1.44);
+    g.fillStyle = '#fff'; g.font = `${S * 0.22}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(t('village.townhall'), w / 2, base - S * 1.44);
     add(scene, 'townhall', c);
   }
   // 출하함 (나무 상자)

@@ -1,22 +1,40 @@
 // 타이틀 화면: 이어하기 / 촌장 고르기 + 마을 이름
 import { RESIDENTS, RESIDENT_BY_ID } from '../data/residents.js';
 import { CHARACTER_IMAGES } from '../data/assets.js';
-import { t } from '../i18n.js';
+import { t, resText, getLang, setLang, applyI18n } from '../i18n.js';
 import { timeAgo } from './time.js';
 
 // saved: 저장된 게임 정보 (없으면 null)
-export function showTitle({ saved, onContinue, onNew }) {
+let selected = 'momo';   // 언어를 바꿔도 고른 촌장이 그대로 남게 바깥에 둠
+let nameTouched = false;
+
+// onLang: 언어를 바꿨을 때 (게임 그림 속 글자 다시 그리기)
+export function showTitle({ saved, onContinue, onNew, onLang }) {
   const $ = id => document.getElementById(id);
   const list = $('mayorList'), info = $('mayorInfo'), nameInput = $('villageName');
-  let selected = 'momo';
 
-  nameInput.value = t('title.defaultVillage');
+  // 언어 국기 버튼
+  const langBox = $('langPick');
+  langBox.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('selected', b.dataset.lang === getLang());
+    b.onclick = () => {
+      if (b.dataset.lang === getLang()) return;
+      setLang(b.dataset.lang);
+      applyI18n();
+      onLang?.();
+      showTitle({ saved, onContinue, onNew, onLang });
+    };
+  });
+
+  // 이름을 직접 고치지 않았으면 기본 이름도 언어에 맞게
+  if (!nameTouched) nameInput.value = t('title.defaultVillage');
+  nameInput.oninput = () => { nameTouched = true; };
   list.innerHTML = '';
   for (const r of RESIDENTS) {
     const b = document.createElement('button');
     b.className = 'mayor';
     b.style.setProperty('--c', r.color);
-    b.innerHTML = `<img src="${CHARACTER_IMAGES[r.id]}" alt=""><span>${r.short}</span>`;
+    b.innerHTML = `<img src="${CHARACTER_IMAGES[r.id]}" alt=""><span>${resText(r.id, 'short')}</span>`;
     b.onclick = () => select(r.id);
     b.dataset.id = r.id;
     list.appendChild(b);
@@ -25,8 +43,7 @@ export function showTitle({ saved, onContinue, onNew }) {
   function select(id) {
     selected = id;
     list.querySelectorAll('.mayor').forEach(el => el.classList.toggle('selected', el.dataset.id === id));
-    const r = RESIDENT_BY_ID[id];
-    info.innerHTML = t('title.mayorInfo', { name: r.name, animal: r.animal, trait: r.trait, bonus: r.bonus });
+    info.innerHTML = t('title.mayorInfo', { name: resText(id, 'name'), animal: resText(id, 'animal'), trait: resText(id, 'trait'), bonus: resText(id, 'bonus') });
   }
   select(selected);
 
@@ -45,7 +62,7 @@ export function showTitle({ saved, onContinue, onNew }) {
   if (saved) {
     const mayor = RESIDENT_BY_ID[saved.mayor?.residentId] || RESIDENTS[0];
     $('contImg').src = CHARACTER_IMAGES[mayor.id];
-    $('contInfo').textContent = t('title.savedInfo', { name: saved.village?.name || '', mayor: mayor.short, coins: (saved.inventory?.coins ?? 0).toLocaleString() });
+    $('contInfo').textContent = t('title.savedInfo', { name: saved.village?.name || '', mayor: resText(mayor.id, 'short'), coins: (saved.inventory?.coins ?? 0).toLocaleString() });
     $('contWhen').textContent = t('title.lastPlayed', { when: timeAgo(saved.lastClockAt) });
     $('continueBtn').onclick = () => { hide(); onContinue(); };
     $('newGameBtn').onclick = () => showMode('new');

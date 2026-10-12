@@ -1,6 +1,6 @@
 // "다녀왔어요!" 창: 게임을 꺼둔 사이 마을에서 생긴 일
 import { t } from '../i18n.js';
-import { formatLeft } from '../core/farm.js';
+import { formatLeft } from '../i18n.js';
 import { openPanel, closePanel, el } from './panel.js';
 
 export function showAway({ awayMs, ripe, thirsty, growing, built = 0 }) {

@@ -9,7 +9,7 @@
   --accent-dark: #e98aa0;
   --gold: #f7c948;
   --shadow: 0 4px 0 rgba(120, 90, 60, .18), 0 8px 18px rgba(80, 60, 40, .12);
-  --font: 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font: 'Jua', 'M PLUS Rounded 1c', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Hiragino Maru Gothic ProN', sans-serif;
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
@@ -288,3 +288,31 @@ html, body {
 @media (max-height: 460px) { #ui:has(#tutorial:not(.hidden)) .toast { bottom: calc(max(8px, var(--safe-b)) + 108px); } }
 #ui:has(#hud.placing) .toast { bottom: calc(max(8px, var(--safe-b)) + 84px); }
 @media (max-width: 560px) { .village-title { display: none; } .res.builder { padding: 0 8px; } }
+
+/* ---------- 언어 고르기 (국기) ---------- */
+.title-card { position: relative; }
+.lang-pick { position: absolute; top: 10px; right: 12px; display: flex; gap: 6px; }
+.lang-pick button {
+  display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 10px 0 6px;
+  border: 3px solid transparent; border-radius: 16px; background: #fff; box-shadow: var(--shadow);
+  font-family: var(--font); font-size: 14px; color: var(--text-soft); cursor: pointer;
+}
+.lang-pick img { width: 36px; height: 24px; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0,0,0,.12); display: block; }
+.lang-pick button.selected { border-color: var(--accent); color: var(--text); background: #fff1f4; }
+.lang-pick button:active { transform: scale(.95); }
+/* 국기만 보여줌 (글자는 화면 읽기용) */
+.lang-pick span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.lang-pick button { padding: 0 6px; }
+@media (max-height: 460px) { .lang-pick { top: 6px; right: 8px; } }
+@media (max-width: 560px) { .title-card { padding-top: 58px; } }
+.lang-row { display: flex; gap: 8px; }
+.lang-row .btn img { width: 30px; height: 20px; border-radius: 3px; vertical-align: middle; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
+.lang-row .btn.selected { outline: 3px solid var(--accent); }
+/* 타이틀이 화면보다 길 때 위쪽(로고·국기)이 잘리지 않게: 가운데 정렬은 margin:auto로 */
+.screen { align-items: flex-start; }
+.title-card { margin: auto; }
+@media (max-height: 640px) and (min-height: 461px) {
+  .mayor img { height: 58px; }
+  .title-card { padding-top: 12px; }
+  .subtitle { margin-bottom: 4px; }
+}

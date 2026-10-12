@@ -3,6 +3,7 @@
 // 나중에 그림 파일이 생기면 data/assets.js에 경로를 적고 여기 대신 불러오면 돼.
 import { TILE } from '../data/map.js';
 import { RES } from './textures.js';
+import { FONT } from '../i18n.js';
 
 const S = TILE * RES;
 
@@ -206,7 +207,7 @@ function drawScaffold(tw, th) {
   // 공사 표지판
   g.fillStyle = '#fcd667'; rr(g, w / 2 - 34, base - 46, 68, 36, 8); g.fill();
   g.strokeStyle = '#8a5f3e'; g.lineWidth = 3; rr(g, w / 2 - 34, base - 46, 68, 36, 8); g.stroke();
-  g.font = `${26}px Jua, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#8a5f3e';
+  g.font = `26px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#8a5f3e';
   g.fillText('🔨', w / 2, base - 27);
   return c;
 }

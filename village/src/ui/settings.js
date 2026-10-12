@@ -1,7 +1,7 @@
 // 설정 창: 소리, 지금 저장, 백업 내보내기/가져오기, 처음부터
 import { state, emit } from '../state/GameState.js';
 import { SaveService } from '../services/SaveService.js';
-import { t } from '../i18n.js';
+import { t, getLang, setLang } from '../i18n.js';
 import { openPanel, el } from './panel.js';
 import { toast } from './toast.js';
 import { timeAgo } from './time.js';
@@ -23,6 +23,23 @@ export function openSettings() {
       };
       sound.appendChild(sBtn);
       body.appendChild(sound);
+
+      // 언어: 바꾸면 저장하고 다시 열기
+      const lang = el('div', 'set-row', `<span>${t('settings.lang')}</span>`);
+      const lr = el('div', 'lang-row');
+      for (const [code, label] of [['ko', '한국어'], ['ja', '日本語']]) {
+        const b = el('button', 'btn small' + (getLang() === code ? ' selected' : ''), `<img src="art/ui/flag_${code}.svg" alt=""> ${label}`);
+        b.onclick = async () => {
+          if (getLang() === code) return;
+          setLang(code);
+          state.settings.lang = code;
+          await SaveService.save();
+          location.reload();
+        };
+        lr.appendChild(b);
+      }
+      lang.appendChild(lr);
+      body.appendChild(lang);
 
       // 지금 저장
       const saveRow = el('div', 'set-col', `<p class="set-note">${t('settings.autosave')}</p>`);

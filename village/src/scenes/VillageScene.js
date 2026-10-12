@@ -21,7 +21,7 @@ import { RES, hash, makeBlob } from '../view/textures.js';
 import { Character, CHARACTER_HEIGHT } from '../view/Character.js';
 import { CameraController } from '../view/CameraController.js';
 import { toast } from '../ui/toast.js';
-import { t, itemName } from '../i18n.js';
+import { t, itemName, resText, FONT } from '../i18n.js';
 
 const DRAG_START = 10;     // 이만큼(화면 픽셀) 움직이면 "끌기"로 판단
 const LONG_PRESS = 480;    // 이만큼(밀리초) 꾹 누르면 "길게 누르기"
@@ -172,7 +172,7 @@ export class VillageScene extends Phaser.Scene {
     // 말풍선은 한 번에 하나만
     for (const c of [this.player, ...this.residents]) if (c.bubble) { c.bubble.destroy(); c.bubble = null; }
     const res = Math.max(2, this.dpr * 2);
-    const label = this.add.text(0, 0, text, { fontFamily: 'Jua, sans-serif', fontSize: '15px', color: '#5b4636', align: 'center', wordWrap: { width: 170 } }).setOrigin(0.5).setResolution(res);
+    const label = this.add.text(0, 0, text, { fontFamily: FONT, fontSize: '15px', color: '#5b4636', align: 'center', wordWrap: { width: 170 } }).setOrigin(0.5).setResolution(res);
     const w = label.width + 22, h = label.height + 14;
     const g = this.add.graphics();
     g.fillStyle(0xffffff, 0.97).fillRoundedRect(-w / 2, -h / 2, w, h, 12);
@@ -266,7 +266,7 @@ export class VillageScene extends Phaser.Scene {
         this.walkTo(r.tileX + (this.player.x < r.x ? -1 : 1), r.tileY, true);
       }
       r.cheer();
-      this.speech(r, RESIDENT_BY_ID[r.id].catchphrase);
+      this.speech(r, resText(r.id, 'catchphrase'));
       return;
     }
     const tx = Math.floor(wx / TILE), ty = Math.floor(wy / TILE);
@@ -625,7 +625,7 @@ export class VillageScene extends Phaser.Scene {
   floatText(plot, text, color = '#5b4636') {
     const x = plot.x * TILE + TILE / 2, y = plot.y * TILE - 10;
     const label = this.add.text(x, y, text, {
-      fontFamily: 'Jua, sans-serif', fontSize: '15px', color, stroke: '#ffffff', strokeThickness: 5,
+      fontFamily: FONT, fontSize: '15px', color, stroke: '#ffffff', strokeThickness: 5,
     }).setOrigin(0.5, 1).setDepth(300000).setResolution(Math.max(2, this.dpr * 2));
     this.tweens.add({ targets: label, y: y - 26, alpha: { from: 1, to: 0 }, duration: 1400, ease: 'Sine.easeOut', onComplete: () => label.destroy() });
   }

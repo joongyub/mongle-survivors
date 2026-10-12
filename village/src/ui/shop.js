@@ -2,9 +2,9 @@
 import { state, emit, salePrice } from '../state/GameState.js';
 import { CROPS } from '../data/crops.js';
 import { ITEMS } from '../data/items.js';
-import { buySeed, sell, isInSeason, formatLeft } from '../core/farm.js';
+import { buySeed, sell, isInSeason } from '../core/farm.js';
 import { now, seasonOf } from '../core/clock.js';
-import { t, itemName } from '../i18n.js';
+import { t, itemName, formatLeft } from '../i18n.js';
 import { openPanel, refreshPanel, el } from './panel.js';
 import { toast } from './toast.js';
 import { sfx } from '../audio.js';
@@ -30,7 +30,7 @@ export function openSeedShop({ onManage } = {}) {
           </div>`);
         const btns = el('div', 'shop-btns');
         for (const n of [1, 5]) {
-          const b = el('button', 'btn small', `${n}개 · 🪙${c.seedPrice * n}`);
+          const b = el('button', 'btn small', `${t('shop.qty', { n })} · 🪙${c.seedPrice * n}`);
           b.disabled = state.inventory.coins < c.seedPrice * n;
           b.onclick = () => {
             const r = buySeed(state.inventory, c.id, n);
@@ -63,7 +63,7 @@ export function openShipBox({ onManage } = {}) {
         const it = ITEMS[id], n = inv.items[id];
         total += salePrice(id) * n;
         const row = el('div', 'shop-row', `<span class="emo">${it.emoji}</span>
-          <div class="shop-text"><b>${itemName(id)} ×${n}</b><small>1개 🪙${salePrice(id)}</small></div>`);
+          <div class="shop-text"><b>${itemName(id)} ×${n}</b><small>${t('shop.each')} 🪙${salePrice(id)}</small></div>`);
         const btns = el('div', 'shop-btns');
         for (const [label, cnt] of [[t('ship.sellOne'), 1], [t('ship.sellAll'), n]]) {
           const b = el('button', 'btn small', label);

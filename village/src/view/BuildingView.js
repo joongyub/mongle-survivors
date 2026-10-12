@@ -1,7 +1,7 @@
 // 건물 그리기: 건물 그림, 공사 틀(비계) + 남은 시간 막대, 완성 연출
 import { TILE } from '../data/map.js';
 import { def, sizeOf, progress, leftMs } from '../core/build.js';
-import { formatLeft } from '../core/farm.js';
+import { formatLeft, FONT } from '../i18n.js';
 import { now } from '../core/clock.js';
 import { RES } from './textures.js';
 import { scaffoldKey } from './buildingArt.js';
@@ -53,7 +53,7 @@ export class BuildingView {
     s.tweens.add({ targets: v.hammer, angle: { from: -25, to: 20 }, duration: 260, yoyo: true, repeat: -1, ease: 'Quad.easeIn' });
     v.bar = s.add.graphics().setVisible(false);
     v.label = s.add.text(0, 0, '', {
-      fontFamily: 'Jua, sans-serif', fontSize: '13px', color: '#5b4636', stroke: '#ffffff', strokeThickness: 4,
+      fontFamily: FONT, fontSize: '13px', color: '#5b4636', stroke: '#ffffff', strokeThickness: 4,
     }).setOrigin(0.5, 1).setResolution(Math.max(2, s.dpr * 2)).setVisible(false);
     this.views.set(b.uid, v);
     return v;

@@ -82,7 +82,7 @@ export function showHud(scene) {
     document.getElementById('rankName').textContent = t('hud.rank', { rank: state.village.rank, name: t('rank.' + state.village.rank) });
     document.getElementById('rankGauge').style.width = Math.round(state.village.scoreProgress * 100) + '%';
     document.getElementById('villageTitle').textContent = t('hud.village', { name: state.village.name, season: t('season.' + seasonOf()) });
-    document.getElementById('clockText').textContent = clockText();
+    document.getElementById('clockText').textContent = clockText(undefined, t('clock.am'), t('clock.pm'));
     const busy = buildersBusy(state.buildings);
     document.getElementById('builderText').textContent = `${busy}/${MAX_BUILDERS}`;
     document.getElementById('builderRes').classList.toggle('working', busy > 0);

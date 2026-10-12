@@ -3,7 +3,7 @@ import { state } from '../state/GameState.js';
 import { BUILDINGS, BUILD_MENU, MAX_BUILDERS } from '../data/buildings.js';
 import { def, missing, countOf, buildersFree, buildMs } from '../core/build.js';
 import { buildMods } from '../state/GameState.js';
-import { formatLeft } from '../core/farm.js';
+import { formatLeft } from '../i18n.js';
 import { t } from '../i18n.js';
 import { openPanel, closePanel, el } from './panel.js';
 

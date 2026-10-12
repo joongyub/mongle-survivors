@@ -3,7 +3,7 @@ import { state, buildMods } from '../state/GameState.js';
 import { def, nextLevelInfo, maxLevel, missing, buildersFree, buildMs, leftMs, progress } from '../core/build.js';
 import { STORAGE_SLOTS, TOWNHALL_SALE } from '../data/buildings.js';
 import { now } from '../core/clock.js';
-import { formatLeft } from '../core/farm.js';
+import { formatLeft } from '../i18n.js';
 import { t } from '../i18n.js';
 import { openPanel, el } from './panel.js';
 import { costHtml, timeText } from './buildMenu.js';
