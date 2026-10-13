@@ -4,10 +4,12 @@ import { sfx } from '../audio.js';
 
 let current = null;
 
-export function openPanel({ title, sub = '', render, onClose, extra }) {
-  closePanel();
+// cls: 창 모양 바꾸기 (예: 'talk-wrap' = 아래쪽 대화 상자)
+// onClose(reason): 'user' = 사람이 닫음, 'replace' = 다른 창이 열리면서 닫힘
+export function openPanel({ title, sub = '', render, onClose, extra, cls = '' }) {
+  closePanel('replace');
   const wrap = document.createElement('div');
-  wrap.className = 'panel-wrap';
+  wrap.className = 'panel-wrap' + (cls ? ' ' + cls : '');
   wrap.innerHTML = `
     <div class="panel" role="dialog" aria-label="${title}">
       <header><div><h3>${title}</h3><p class="panel-sub">${sub}</p></div>
@@ -15,7 +17,7 @@ export function openPanel({ title, sub = '', render, onClose, extra }) {
       <div class="panel-body"></div>
     </div>`;
   wrap.addEventListener('pointerdown', e => { if (e.target === wrap) closePanel(); });
-  wrap.querySelector('.close').onclick = closePanel;
+  wrap.querySelector('.close').onclick = () => closePanel();
   if (extra) wrap.querySelector('.extra').onclick = extra.onClick;
   document.getElementById('ui').appendChild(wrap);
   const body = wrap.querySelector('.panel-body');
@@ -27,12 +29,12 @@ export function openPanel({ title, sub = '', render, onClose, extra }) {
 
 export function refreshPanel() { if (current) { current.body.innerHTML = ''; current.render(current.body, current); } }
 
-export function closePanel() {
+export function closePanel(reason = 'user') {
   if (!current) return;
   current.wrap.remove();
   const cb = current.onClose;
   current = null;
-  cb?.();
+  cb?.(reason);
 }
 
 export function isPanelOpen() { return !!current; }

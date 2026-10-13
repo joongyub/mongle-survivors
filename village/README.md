@@ -9,6 +9,20 @@
 - 글자: `src/data/i18n/ko.js`(한국어), `src/data/i18n/ja.js`(일본어). 같은 키에 글만 바꾸면 됨
 - 일본어 글꼴은 M PLUS Rounded 1c (구글 폰트)
 
+## 6단계 주민 (완료)
+- 주민 하루 일과 (현실 시각): 아침 7~11시 자기 자리 산책 → 낮 11~17시 마을회관 앞 → 저녁 17~23시 둘씩 마주 보고 수다(💬) → 밤 23~7시 자기 자리에서 쿨쿨(Zzz, 나리·보리는 누운 그림)
+- 주민을 누르면 촌장이 옆으로 걸어가서 아래쪽 대화 상자가 열림. 자고 있어도 눌러서 깨우면 이야기해 줌
+- 대사: 시간대·계절·호감도 단계·주민 성격별 대사, 생일, 이틀 넘게 안 오면 "보고 싶었어!"
+- 호감도 0~100, 5단계 (처음 봄 0 → 아는 사이 20 → 친구 40 → 단짝 70 → 베프 100). **절대 깎이지 않음**
+  - 하루 첫 대화 +2, 선물 +3 (좋아하는 것 +8, 싫어하는 것 +0), 의뢰 완료 +5, 생일 선물 ×2
+- 선물: 하루에 한 번, 가방에서 골라 주기. 아는 사이부터 좋아하는 물건에 ♥ 표시
+- 단계가 오르면 감사 편지 + 코인 (30 / 100 / 300 / 800). 친구가 되면 같이 찍은 사진
+- 📜 오늘의 의뢰 3개: 매일 아침 6시에 새로 옴 (같은 날엔 새로고침해도 같은 의뢰). 의뢰 창이나 그 주민과의 대화에서 완료. 하루 1번 다른 의뢰로 바꾸기
+- 주민 머리 위 표시: 📜 부탁 있음, ✨ 지금 완료 가능, 🎂 오늘 생일
+- 🐾 주민 목록: 호감도 막대, 오늘 대화·선물 했는지, 생일, 좋아하는 것(아는 사이부터)·별로인 것(친구부터), 찾아가기·편지·사진
+- 안내 이어짐: 창고 완성 → 주민과 이야기 → 의뢰 보기 → 끝
+- 저장 버전 3 (옛 저장은 자동으로 바뀜). 주민 규칙 `src/core/residents.js`, 의뢰 규칙 `src/core/quests.js`, 숫자는 `src/data/dialogue.js`·`src/data/quests.js`, 대사는 `i18n/ko.js`·`ja.js`의 `talk.*`
+
 ## 5단계 건설 (완료)
 - 🔨 건설 메뉴: 창고(가방 +10칸/레벨), 울타리(옆과 저절로 이어짐), 길(징검돌 → 벽돌 → 꽃길), 꽃밭(가로·세로 돌리기)
 - 잠긴 건물(광장, 잡화점, 빵집, 분수, 공방)은 몇 등급에서 열리는지 미리 보여줌 (등급은 7단계)
@@ -63,13 +77,13 @@ css/ui.css          메뉴·버튼 디자인
 lib/phaser.min.js   Phaser 3.90 엔진 (그대로 둠)
 art/characters/     주민 그림 (포즈 그림은 아이디 폴더 안에)
 src/main.js         시작점
-src/core/           게임 규칙 (화면과 분리된 순수 함수): clock.js 시간, grid.js 길찾기, farm.js 농사, build.js 건설
+src/core/           게임 규칙 (화면과 분리된 순수 함수): clock.js 시간, grid.js 길찾기, farm.js 농사, build.js 건설, residents.js 호감도, quests.js 의뢰
 src/data/           지도, 주민, 그림 경로, 글자(i18n)
 src/state/          게임 상태
 src/services/       저장 (SaveService, LocalStore, migrations)
 src/scenes/         Phaser 화면 (Boot, Village)
-src/view/           코드로 그린 그림, 캐릭터, 카메라
-src/ui/             HTML 메뉴 (타이틀, HUD, 알림)
+src/view/           코드로 그린 그림, 캐릭터, 카메라, 주민 움직임(ResidentAI.js)
+src/ui/             HTML 메뉴 (타이틀, HUD, 알림, 대화 talk.js, 주민 목록, 의뢰 창)
 build_artifact.py   Claude 미리보기용 artifact.html 만들기
 ```
 
@@ -78,4 +92,6 @@ build_artifact.py   Claude 미리보기용 artifact.html 만들기
 - 주민 이름·말버릇: `src/data/residents.js`
 - 화면 글자: `src/data/i18n/ko.js` (일본어 `ja.js`)
 - 건물 비용·시간·효과: `src/data/buildings.js`
+- 주민 선물 취향·생일·자기 자리: `src/data/residents.js`, 호감도 숫자: `src/data/dialogue.js`, 의뢰 종류·보상: `src/data/quests.js`
+- 주민 대사: `src/data/i18n/ko.js`·`ja.js`의 `talk.own.<아이디>.0~2` (주민마다 3줄)
 - 포즈 그림 추가: `art/characters/<아이디>/happy.png` 등을 넣고 `src/data/assets.js`의 `POSE_IMAGES`에 한 줄 추가

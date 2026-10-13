@@ -33,6 +33,11 @@ const SOUNDS = {
   build: () => { for (let i = 0; i < 3; i++) tone(180, 0.07, { type: 'square', vol: 0.05, delay: i * 0.13, slide: 0.7 }); },
   built: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i === 3 ? 0.35 : 0.12, { type: 'triangle', vol: 0.12, delay: i * 0.1 })); },
   chop: () => { tone(260, 0.06, { type: 'square', vol: 0.06, slide: 0.6 }); tone(220, 0.06, { type: 'square', vol: 0.05, delay: 0.1, slide: 0.6 }); },
+  // 6단계: 대화(뽀록), 선물, 하트, 편지
+  talk: () => { const f = 620 + Math.random() * 180; tone(f, 0.05, { type: 'triangle', vol: 0.07, slide: 1.25 }); tone(f * 1.2, 0.06, { type: 'triangle', vol: 0.06, delay: 0.07, slide: 0.9 }); },
+  gift: () => { [659, 784, 988, 1319].forEach((f, i) => tone(f, 0.1, { type: 'sine', vol: 0.1, delay: i * 0.07 })); },
+  heart: () => { tone(740, 0.08, { type: 'sine', vol: 0.08, slide: 1.4 }); tone(1100, 0.12, { type: 'sine', vol: 0.06, delay: 0.08 }); },
+  letter: () => { tone(880, 0.09, { type: 'triangle', vol: 0.08 }); tone(1175, 0.16, { type: 'triangle', vol: 0.07, delay: 0.1 }); },
   pick: () => { tone(1200, 0.05, { type: 'square', vol: 0.04 }); tone(900, 0.06, { type: 'square', vol: 0.04, delay: 0.08 }); },
 };
 

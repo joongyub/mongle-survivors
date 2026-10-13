@@ -14,6 +14,7 @@ import { SaveService, startAutoSave } from './services/SaveService.js';
 import { now, dayKey } from './core/clock.js';
 import * as Farm from './core/farm.js';
 import { finishDue } from './core/build.js';
+import { refreshQuestsNow } from './ui/questPanel.js';
 
 // 고해상도 화면(레티나)에서도 선명하게: 실제 픽셀 수만큼 그리고 CSS로 줄여 보여줌
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -94,7 +95,9 @@ function summarizeAway() {
   const built = finishDue(state.buildings, t0).length;
   state.stats.built += built;
   applyEffects();
-  return { awayMs, built, ...counts };
+  // 아침 6시가 지났으면 새 의뢰 (안내를 다 본 뒤부터 알려줌)
+  const quests = refreshQuestsNow() && state.tutorial.step >= 8 ? state.quests.list.length : 0;
+  return { awayMs, built, quests, ...counts };
 }
 
 game.events.on('village-ready', scene => {

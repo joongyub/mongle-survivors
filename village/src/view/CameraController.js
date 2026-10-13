@@ -59,5 +59,12 @@ export class CameraController {
 
   focusPlayer() { if (this.target) this.cam.startFollow(this.target, false, 0.12, 0.12); }
 
+  // 대화 중: 월드의 (x, y) 지점이 아래 대화 상자에 안 가려진 위쪽 가운데에 오게 카메라를 옮김
+  // coverCss = 화면 아래에서 대화 상자가 차지하는 높이 (CSS 픽셀)
+  showAbove(x, y, coverCss) {
+    this.unfollow();
+    this.cam.pan(x, y + (coverCss / 2) * this.base / this.cam.zoom, 320, 'Sine.easeInOut', true);
+  }
+
   resize() { this.apply(); }
 }

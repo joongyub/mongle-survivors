@@ -87,6 +87,7 @@ function doSell(pairs) {
   if (!gain) return;
   sfx('coin');
   toast(t('ship.sold', { coins: gain }));
+  state.stats.soldCoins = (state.stats.soldCoins || 0) + gain;
   emit('change'); emit('sold', gain);
   refreshPanel();
 }

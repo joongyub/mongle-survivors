@@ -2,6 +2,7 @@
 // 그림 한 장으로 자연스럽게 움직이게: 통통 튀며 걷기, 숨쉬기, 좌우 보기, 기쁨 점프
 import { POSE_IMAGES, poseKey } from '../data/assets.js';
 import { TILE } from '../data/map.js';
+import { FONT } from '../i18n.js';
 
 const HEIGHT = 66;          // 화면에서 보이는 키 (월드 픽셀)
 const SMALL_TEX = 128;      // 작게 보일 때 쓰는 미리 줄인 그림 높이
@@ -62,6 +63,22 @@ export class Character {
   }
 
   stop() { this.path = []; this.moving = false; this.onArrive = null; }
+
+  // 포즈 그림을 바로 끝내고 기본 그림으로
+  clearPose() { if (this.pose) { this.pose = null; this.setTexture(this.id); } }
+
+  // 머리 위 작은 표시 (📜 의뢰 있음, ✨ 완료 가능 등). null이면 지움
+  setBadge(text) {
+    if ((this.badgeText || null) === (text || null)) return;
+    this.badgeText = text || null;
+    if (!text) { this.badge?.destroy(); this.badge = null; return; }
+    if (!this.badge) {
+      this.badge = this.scene.add.text(this.x, this.y, '', { fontFamily: FONT, fontSize: '20px' })
+        .setOrigin(0.5, 1).setResolution(Math.max(2, (this.scene.dpr || 1) * 2));
+      this.scene.tweens.add({ targets: this.badge, scale: { from: 0.9, to: 1.1 }, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+    this.badge.setText(text);
+  }
 
   faceTowards(x) { if (Math.abs(x - this.x) > 2) this.facing = x < this.x ? -1 : 1; }
 
@@ -126,7 +143,8 @@ export class Character {
       sy = 1 - land * 0.07 + Math.abs(s) * 0.04;
     } else {
       // 숨쉬기
-      const b = Math.sin(this.t * 2.2) * 0.018;
+      // 잘 때는 느리고 크게 숨쉬기
+      const b = this.sleepy ? Math.sin(this.t * 1.1) * 0.035 : Math.sin(this.t * 2.2) * 0.018;
       sx = 1 - b * 0.5; sy = 1 + b;
       this.walkPhase = 0;
     }
@@ -143,6 +161,7 @@ export class Character {
     this.shadow.setPosition(this.x, this.y - 2);
     const sh = 0.36 * (1 - hop / 60);
     this.shadow.setScale(sh, sh).setDepth(this.y - 0.5);
+    if (this.badge) this.badge.setPosition(this.x, this.y - HEIGHT - 8 - hop).setDepth(this.y + 2000).setVisible(!this.bubble);
   }
 
   containsPoint(px, py) {
@@ -151,7 +170,7 @@ export class Character {
 
   get headY() { return this.y - HEIGHT; }
 
-  destroy() { this.sprite.destroy(); this.shadow.destroy(); }
+  destroy() { this.sprite.destroy(); this.shadow.destroy(); this.badge?.destroy(); }
 }
 
 export { HEIGHT as CHARACTER_HEIGHT, SMALL_TEX };

@@ -3,20 +3,22 @@ import { t } from '../i18n.js';
 import { formatLeft } from '../i18n.js';
 import { openPanel, closePanel, el } from './panel.js';
 
-export function showAway({ awayMs, ripe, thirsty, growing, built = 0 }) {
+export function showAway({ awayMs, ripe, thirsty, growing, built = 0, quests = 0 }) {
   openPanel({
     title: t('away.title'),
     sub: t('away.time', { time: formatLeft(awayMs) }),
     render(body) {
       const list = el('div', 'away-list');
+      if (awayMs >= 2 * 864e5) list.appendChild(el('div', '', t('away.missed')));
+      if (quests) list.appendChild(el('div', '', t('away.quests', { n: quests })));
       if (built) list.appendChild(el('div', '', t('away.built', { n: built })));
       if (ripe) list.appendChild(el('div', '', t('away.ripe', { n: ripe })));
       if (thirsty) list.appendChild(el('div', '', t('away.thirsty', { n: thirsty })));
       if (growing) list.appendChild(el('div', '', t('away.growing', { n: growing })));
-      if (!ripe && !thirsty && !growing && !built) list.appendChild(el('div', '', t('away.none')));
+      if (!ripe && !thirsty && !growing && !built && !quests) list.appendChild(el('div', '', t('away.none')));
       body.appendChild(list);
       const ok = el('button', 'btn primary big-ish', t('away.ok'));
-      ok.onclick = closePanel;
+      ok.onclick = () => closePanel();
       body.appendChild(ok);
     },
   });

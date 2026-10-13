@@ -1,6 +1,5 @@
 // 마을 화면: 타일 지도 그리기, 캐릭터 움직이기, 카메라
-import { TILE, MAP_ROWS, LEGEND, GROUND_RULES, OBJECT_RULES, START_POS, RESIDENT_SPOTS } from '../data/map.js';
-import { RESIDENT_BY_ID } from '../data/residents.js';
+import { TILE, MAP_ROWS, LEGEND, GROUND_RULES, OBJECT_RULES, START_POS } from '../data/map.js';
 import { BUILDINGS, GATHER } from '../data/buildings.js';
 import { parseMap, buildBlocked, isWalkable, findPath, smoothPath, nearestWalkable, reachable } from '../core/grid.js';
 import { skyTint, now, dayKey } from '../core/clock.js';
@@ -19,6 +18,10 @@ import { isPanelOpen, closePanel } from '../ui/panel.js';
 import { sfx } from '../audio.js';
 import { RES, hash, makeBlob } from '../view/textures.js';
 import { Character, CHARACTER_HEIGHT } from '../view/Character.js';
+import { ResidentAI } from '../view/ResidentAI.js';
+import { openTalk } from '../ui/talk.js';
+import { refreshQuestsNow, questOf, questReady } from '../ui/questPanel.js';
+import { isBirthday } from '../core/residents.js';
 import { CameraController } from '../view/CameraController.js';
 import { toast } from '../ui/toast.js';
 import { t, itemName, resText, FONT } from '../i18n.js';
@@ -47,7 +50,7 @@ export class VillageScene extends Phaser.Scene {
     this.farmView = new FarmView(this, state.farm.plots, farmMods);
     this.createCharacters();
     this.createSky();
-    this.time.addEvent({ delay: 1000, loop: true, callback: () => { this.farmView.tick(); this.buildTick(); } });
+    this.time.addEvent({ delay: 1000, loop: true, callback: () => { this.farmView.tick(); this.buildTick(); this.questTick(); this.updateBadges(); } });
     this.events.on('crop-ripe', () => { if (state.tutorial.step === 2) this.setTutorial(3); });
     on('hold-seed', cropId => this.setHeldSeed(cropId));
     on('sold', () => { if (state.tutorial.step === 4) { this.setTutorial(5); this.guideSay('tut.say.4', 'dodo'); } });
@@ -65,6 +68,9 @@ export class VillageScene extends Phaser.Scene {
     this.game.events.emit('village-ready', this);
     if (state.tutorial.step === 0) this.time.delayedCall(1200, () => this.guideSay('tut.say.0'));
     this.checkTutorial();
+    refreshQuestsNow();
+    this.updateBadges();
+    on('change', () => this.updateBadges());
   }
 
   // 막힌 칸 표를 다시 만듦 (건물을 짓거나 옮기면)
@@ -131,14 +137,11 @@ export class VillageScene extends Phaser.Scene {
     const sp = state.player && isWalkable(this.blocked, state.player.x, state.player.y) ? state.player : START_POS;
     const px = sp.x * TILE + TILE / 2, py = sp.y * TILE + TILE / 2 + 6;
     this.player = new Character(this, state.mayor.residentId, px, py, { speed: 160 });
-    this.residents = [];
-    const ids = Object.keys(state.residents);
-    ids.forEach((id, i) => {
-      const s = RESIDENT_SPOTS[i % RESIDENT_SPOTS.length];
-      const c = new Character(this, id, s.x * TILE + TILE / 2, s.y * TILE + TILE / 2 + 6, { speed: 90 });
-      c.facing = s.x > START_POS.x ? -1 : 1;
-      this.residents.push(c);
-    });
+    // 주민: 지금 시각에 맞는 자리에서 시작 (밤이면 이미 자고 있음)
+    this.residents = Object.keys(state.residents).map(id => new Character(this, id, px, py, { speed: 80 }));
+    this.residentAI = new ResidentAI(this, this.residents);
+    this.residentAI.placeAll();
+    this.pendingTalk = null;
     // 이동 목표 표시
     this.targetMark = this.add.image(0, 0, 'target').setScale(0.5).setVisible(false).setDepth(-5);
     this.tweens.add({ targets: this.targetMark, scale: { from: 0.42, to: 0.55 }, alpha: { from: 1, to: 0.5 }, duration: 500, yoyo: true, repeat: -1 });
@@ -258,15 +261,11 @@ export class VillageScene extends Phaser.Scene {
 
   onTap(wx, wy) {
     // 1) 주민을 눌렀나?
-    const r = this.residents.find(c => c.containsPoint(wx, wy)) || (this.player.containsPoint(wx, wy) ? this.player : null);
-    if (r) {
-      if (r !== this.player) {
-        r.faceTowards(this.player.x);
-        this.player.faceTowards(r.x);
-        this.walkTo(r.tileX + (this.player.x < r.x ? -1 : 1), r.tileY, true);
-      }
-      r.cheer();
-      this.speech(r, resText(r.id, 'catchphrase'));
+    const r = this.residents.find(c => c.containsPoint(wx, wy));
+    if (r) { this.talkTo(r); return; }
+    if (this.player.containsPoint(wx, wy)) {
+      this.player.cheer();
+      this.speech(this.player, resText(this.player.id, 'catchphrase'));
       return;
     }
     const tx = Math.floor(wx / TILE), ty = Math.floor(wy / TILE);
@@ -300,6 +299,7 @@ export class VillageScene extends Phaser.Scene {
   }
 
   walkTo(tx, ty, near = false, onArrive = null) {
+    this.cancelPendingTalk();
     let goal = { x: tx, y: ty };
     if (!isWalkable(this.blocked, tx, ty)) {
       goal = nearestWalkable(this.blocked, tx, ty, near ? 3 : 1);
@@ -311,6 +311,110 @@ export class VillageScene extends Phaser.Scene {
     p.walkPath(smoothPath(this.blocked, p.tileX, p.tileY, raw), onArrive);
     this.targetMark.setPosition(goal.x * TILE + TILE / 2, goal.y * TILE + TILE / 2 + 6).setVisible(true);
     this.camCtl.focusPlayer();
+  }
+
+  // ---------- 주민과 이야기 ----------
+  // 주민 옆으로 걸어가서 대화 창을 엶. 길이 막혀 있어도 대화는 됨 (못 만나는 일 없게)
+  talkTo(r) {
+    if (this.talkingWith) return;
+    this.cancelPendingTalk();
+    const { woke } = this.residentAI.hold(r);
+    const p = this.player;
+    const open = () => {
+      this.pendingTalk = null;
+      this.targetMark.setVisible(false);
+      r.faceTowards(p.x); p.faceTowards(r.x);
+      this.talkingWith = r;
+      openTalk(this, r, { woke });
+    };
+    if (Math.abs(p.x - r.x) < TILE * 1.7 && Math.abs(p.y - r.y) < TILE * 1.3) { p.stop(); open(); return; }
+    const side = p.x < r.x ? -1 : 1;
+    const goal = [[side, 0], [-side, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: r.tileX + dx, y: r.tileY + dy }))
+      .find(g => isWalkable(this.blocked, g.x, g.y)) || nearestWalkable(this.blocked, r.tileX, r.tileY, 3);
+    const raw = goal && findPath(this.blocked, p.tileX, p.tileY, goal.x, goal.y);
+    if (!raw) { p.stop(); open(); return; }
+    this.pendingTalk = { r, cb: open };
+    p.walkPath(smoothPath(this.blocked, p.tileX, p.tileY, raw), open);
+    this.targetMark.setPosition(goal.x * TILE + TILE / 2, goal.y * TILE + TILE / 2 + 6).setVisible(true);
+    this.camCtl.focusPlayer();
+  }
+
+  // 걸어가는 도중에 다른 곳을 누르면 대화 약속 취소
+  cancelPendingTalk() {
+    if (!this.pendingTalk) return;
+    this.residentAI.release(this.pendingTalk.r);
+    this.pendingTalk = null;
+  }
+
+  // 대화 상자 높이만큼 카메라를 올려서 두 캐릭터가 보이게
+  liftFor(panelEl) {
+    const p = this.player, r = this.talkingWith;
+    if (!panelEl || !r) return;
+    const top = Math.min(p.y, r.y) - CHARACTER_HEIGHT, bottom = Math.max(p.y, r.y);
+    this.camCtl.showAbove((p.x + r.x) / 2, (top + bottom) / 2, window.innerHeight - panelEl.offsetTop);
+  }
+
+  endTalk(r) {
+    this.talkingWith = null;
+    this.camCtl.focusPlayer();
+    this.residentAI.release(r);
+    this.updateBadges();
+  }
+
+  // 주민 머리 위로 글자 (+2 ♥ 등) + 기쁨 점프
+  residentCheer(id, text) {
+    const r = this.residents.find(c => c.id === id);
+    if (!r) return;
+    if (this.residentAI.isAsleep(r)) return;
+    r.cheer();
+    if (text) this.floatOver(r, text, '#e0708a');
+    sfx('heart');
+  }
+
+  // 선물 반응: 좋아함 = 하트 펑펑, 보통 = 기쁨, 싫어함 = 시무룩 (그래도 호감도는 안 깎임)
+  giftReaction(r, reaction, gain, birthday) {
+    if (reaction === 'dislike') {
+      if (!r.showPose('sad', 1800)) this.tweens.add({ targets: r, x: r.x + 3, duration: 70, yoyo: true, repeat: 3 });
+      this.floatOver(r, '💦', '#6a9ad0');
+      sfx('tap');
+      return;
+    }
+    r.cheer();
+    sfx('gift');
+    if (gain) this.floatOver(r, '+' + gain + ' ♥', '#e0708a');
+    if (reaction === 'love' || birthday) this.heartBurst(r, birthday ? 16 : 9);
+  }
+
+  heartBurst(ch, n = 9) {
+    const cx = ch.x, cy = ch.headY + 10;
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, d = 26 + Math.random() * 34;
+      const h = this.add.image(cx, cy, i % 3 ? 'heart' : 'sparkle').setScale(0.42).setDepth(200001)
+        .setTint(i % 3 ? 0xffffff : 0xfff2a8);
+      this.tweens.add({ targets: h, x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d * 0.7 - 24, scale: 0.15, alpha: 0, duration: 900 + Math.random() * 300, ease: 'Quad.easeOut', onComplete: () => h.destroy() });
+    }
+  }
+
+  // 머리 위 표시: ✨ 의뢰 완료 가능 > 🎂 생일 (오늘 선물 전) > 📜 의뢰 있음
+  updateBadges() {
+    if (!this.residents) return;
+    const today = dayKey(), t0 = now();
+    for (const r of this.residents) {
+      const q = questOf(r.id);
+      const rel = state.residents[r.id] || {};
+      let badge = null;
+      if (q && questReady(q)) badge = '✨';
+      else if (isBirthday(r.id, t0) && rel.giftDay !== today) badge = '🎂';
+      else if (q) badge = '📜';
+      r.setBadge(state.tutorial.step >= 8 ? badge : null);
+    }
+  }
+
+  // 아침 6시가 지나면 새 의뢰
+  questTick() {
+    if (!refreshQuestsNow()) return;
+    if (state.tutorial.step >= 8) { sfx('open'); toast(t('quest.new', { n: state.quests.list.length })); }
+    emit('change');
   }
 
   // ---------- 농사 ----------
@@ -536,6 +640,7 @@ export class VillageScene extends Phaser.Scene {
     this.rebuildBlocked();
     this.buildingView.sync();
     applyEffects();
+    this.residentAI.onMapChanged();
     for (const r of this.residents) {
       if (isWalkable(this.blocked, r.tileX, r.tileY)) continue;
       const s = nearestWalkable(this.blocked, r.tileX, r.tileY, 6);
@@ -586,7 +691,7 @@ export class VillageScene extends Phaser.Scene {
     sfx('built');
     const g = this.buildingView.geometry(b);
     // 가장 가까운 주민이 축하
-    const fan = [...this.residents].sort((a, c) => Math.hypot(a.x - g.cx, a.y - g.bottom) - Math.hypot(c.x - g.cx, c.y - g.bottom))[0];
+    const fan = this.residents.filter(r => !this.residentAI.isAsleep(r)).sort((a, c) => Math.hypot(a.x - g.cx, a.y - g.bottom) - Math.hypot(c.x - g.cx, c.y - g.bottom))[0];
     if (fan) { fan.faceTowards(g.cx); fan.cheer(); this.speech(fan, t('build.cheer.' + Math.floor(Math.random() * 3))); }
     this.player.cheer();
     toast(t('build.done', { name: buildingName(b), lv: b.level }) + ' ' + effectText(b.type, b.level), 3200);
@@ -611,14 +716,28 @@ export class VillageScene extends Phaser.Scene {
       if (!storage) this.guideSay('tut.say.6', 'dodo');
     }
     if (tut.step === 6 && storage) this.setTutorial(7);
-    if (tut.step === 7 && storage?.level > 0) { this.setTutorial(TUT_END); this.guideSay('tut.say.8', 'dodo'); }
+    if (tut.step === 7 && storage?.level > 0) { this.setTutorial(8); this.guideSay('tut.say.8', 'dodo'); }
   }
 
   // 안내 담당 주민이 말하기 (없으면 처음 주민)
-  guideSay(key, who = 'momo') {
-    if (state.tutorial.step >= TUT_END && key !== 'tut.say.8') return;
+  guideSay(key, who = 'momo', force = false) {
+    if (state.tutorial.step >= TUT_END && !force) return;
     const guide = this.residents.find(r => r.id === who) || this.residents.find(r => r.id === 'momo') || this.residents[0];
-    if (guide) { this.speech(guide, t(key)); guide.cheer(); }
+    if (guide) { this.speech(guide, t(key)); if (!this.residentAI?.isAsleep(guide)) guide.cheer(); }
+  }
+
+  // 의뢰 창을 처음 열면 안내 끝
+  finishTutorial() {
+    this.setTutorial(TUT_END);
+    this.guideSay('tut.say.10', 'momo', true);
+  }
+
+  // 캐릭터 머리 위로 잠깐 떠오르는 글자
+  floatOver(ch, text, color = '#5b4636') {
+    const label = this.add.text(ch.x, ch.headY - 6, text, {
+      fontFamily: FONT, fontSize: '17px', color, stroke: '#ffffff', strokeThickness: 5,
+    }).setOrigin(0.5, 1).setDepth(300000).setResolution(Math.max(2, this.dpr * 2));
+    this.tweens.add({ targets: label, y: label.y - 30, alpha: { from: 1, to: 0 }, duration: 1500, ease: 'Sine.easeOut', onComplete: () => label.destroy() });
   }
 
   // 밭(또는 나무·바위) 위에 잠깐 떠오르는 글자
@@ -656,6 +775,7 @@ export class VillageScene extends Phaser.Scene {
     if (!vx && !vy) return false;
     const p = this.player;
     if (p.path.length) { p.stop(); this.targetMark.setVisible(false); }
+    this.cancelPendingTalk();
     const len = Math.hypot(vx, vy);
     const step = p.speed * this.groundSpeed(p) * dt;
     vx = vx / len * step; vy = vy / len * step;
@@ -692,11 +812,11 @@ export class VillageScene extends Phaser.Scene {
     if (!state.player || state.player.x !== p.tileX || state.player.y !== p.tileY) state.player = { x: p.tileX, y: p.tileY };
     if (!p.moving && this.targetMark.visible) this.targetMark.setVisible(false);
 
-    for (const r of this.residents) {
-      // 가끔 두리번거리기 (주민 산책은 6단계에서)
-      if (Math.random() < dt * 0.25) r.facing *= -1;
-      r.update(dt);
-    }
+    // 대화하러 가던 길이 다른 행동으로 바뀌면 약속 취소
+    if (this.pendingTalk && p.onArrive !== this.pendingTalk.cb) this.cancelPendingTalk();
+
+    this.residentAI.update(dt);
+    for (const r of this.residents) r.update(dt);
     for (const ch of [p, ...this.residents]) {
       if (ch.bubble) ch.bubble.setPosition(ch.x, ch.headY - ch.bubble.h / 2 - 14);
     }

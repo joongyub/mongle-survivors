@@ -8,10 +8,11 @@ import { RESIDENT_BY_ID } from '../data/residents.js';
 import { START_BUILDINGS } from '../data/buildings.js';
 import { bagBonus, saleBonus } from '../core/build.js';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 // 처음 안내 단계: 0 심기 → 1 물주기 → 2 기다리기 → 3 수확 → 4 팔기
-//               → 5 재료 모으기 → 6 창고 짓기 → 7 공사 기다리기 → 8 끝
-export const TUT_END = 8;
+//               → 5 재료 모으기 → 6 창고 짓기 → 7 공사 기다리기
+//               → 8 주민과 이야기 → 9 의뢰 보기 → 10 끝
+export const TUT_END = 10;
 const listeners = {};
 
 // 새 게임의 기본 모양. 저장 파일에 없는 칸은 여기 값으로 채워져.
@@ -29,9 +30,10 @@ export function defaultState() {
     buildings: [],               // 건물 목록 (core/build.js 참고)
     gather: { day: null, used: {} },   // 오늘 이미 재료를 얻은 나무·바위 ('x,y': true)
     inventory: { coins: 100, capacity: BAG_START_CAPACITY, items: {} },
-    residents: {},
+    residents: {},               // 주민별 { friendship 호감도, talkedDay, giftDay, lastTalkAt } (core/residents.js)
+    quests: { day: null, rerolls: 0, list: [] },   // 오늘의 의뢰 (core/quests.js)
     tutorial: { step: 0 },       // 위의 TUT_END 설명 참고
-    stats: { harvested: 0, planted: 0, built: 0, gathered: 0, daysPlayed: 1, lastDay: null },
+    stats: { harvested: 0, planted: 0, built: 0, gathered: 0, soldCoins: 0, talks: 0, gifts: 0, questsDone: 0, daysPlayed: 1, lastDay: null },
     settings: { muted: false, lang: 'ko' },
   };
 }
@@ -44,7 +46,7 @@ export function newGame({ mayorId, villageName, residents }) {
   state.createdAt = now();
   state.mayor = { residentId: mayorId };
   state.village.name = villageName;
-  for (const id of residents) state.residents[id] = { movedIn: true, movedInAt: now(), friendship: 0 };
+  for (const id of residents) state.residents[id] = { movedIn: true, movedInAt: now(), friendship: 0, talkedDay: null, giftDay: null, lastTalkAt: null };
   state.farm.plots = START_PLOTS.map((p, i) => newPlot('p_' + String(i + 1).padStart(3, '0'), p.x, p.y));
   state.inventory.items = { ...START_SEEDS };
   state.buildings = START_BUILDINGS.map(b => ({ ...b }));

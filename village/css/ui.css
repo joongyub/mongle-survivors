@@ -316,3 +316,80 @@ html, body {
   .title-card { padding-top: 12px; }
   .subtitle { margin-bottom: 4px; }
 }
+
+/* ---------- 6단계: 주민 대화, 주민 목록, 의뢰, 편지 ---------- */
+/* 대화 상자: 화면 아래쪽에 붙어서 마을이 위로 보이게 */
+.panel-wrap.talk-wrap { align-items: flex-end; background: rgba(91, 70, 54, .08); padding-bottom: max(8px, var(--safe-b)); }
+.talk-wrap .panel { width: min(640px, 100%); max-height: min(360px, 78%); animation: slideUp .2s ease-out; }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } }
+.talk-wrap .panel header { padding-bottom: 0; }
+.talk-main { display: flex; gap: 12px; align-items: flex-start; }
+.talk-face {
+  width: 88px; height: 100px; object-fit: contain; flex: none; padding: 6px; border-radius: 20px;
+  background: color-mix(in srgb, var(--c, #f7a8b8) 28%, #fff); border: 2px solid color-mix(in srgb, var(--c, #f7a8b8) 50%, #fff);
+}
+.talk-face.happy { animation: hop .5s ease-in-out 2; }
+.talk-face.sad { animation: sway .35s ease-in-out 3; }
+@keyframes sway { 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+.talk-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.talk-line { margin: 0; font-size: 18px; line-height: 1.5; min-height: 3em; padding: 10px 14px; background: #fff; border-radius: 16px; border: 2px solid var(--panel-edge); cursor: pointer; }
+.talk-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.talk-quest { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 14px; background: #fffdf6; border: 2px dashed var(--panel-edge); font-size: 16px; }
+.talk-quest small { color: var(--text-soft); }
+.talk-quest .btn { margin-left: auto; }
+.talk-quest.ready { border-color: var(--gold); background: #fff8dc; }
+@media (max-height: 460px) {
+  .talk-wrap .panel { max-height: 96%; }
+  .talk-face { width: 64px; height: 74px; }
+  .talk-line { font-size: 16px; min-height: 2.4em; padding: 6px 10px; }
+}
+
+/* 호감도 하트 막대 */
+.heart-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+.heart-row small { width: auto !important; color: var(--text-soft); font-size: 13px; white-space: nowrap; }
+.heart-gauge { flex: 1; min-width: 60px; height: 10px; border-radius: 5px; background: #f6e3e8; overflow: hidden; }
+.heart-gauge i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #f7a8b8, #f06f8f); transition: width .5s; }
+.tag.tier { background: #fde4ea; color: #c4527a; white-space: nowrap; }
+.tag.tier.t0 { background: #f1ebe2; color: #8a7360; }
+.tag.tier.t3, .tag.tier.t4 { background: #f06f8f; color: #fff; }
+
+/* 의뢰 · 주민 목록 */
+.q-face { width: 52px; height: 56px; object-fit: contain; flex: none; border-radius: 14px; padding: 3px; background: #f6ead6; }
+.q-face.shadowed { filter: brightness(0) opacity(.22); background: transparent; }
+.quest-row.ready { border-color: var(--gold); background: #fffbea; }
+.quest-row.done { opacity: .6; }
+.quest-row .progress { height: 10px; }
+.quest-row .q-text { font-size: 15px; color: var(--text); }
+.quest-all { margin: 0; padding: 10px 12px; border-radius: 14px; background: #fff3c4; text-align: center; font-size: 16px; }
+.res-row .soft { color: var(--text-soft); font-size: 13px; }
+.res-row .bd { color: #e0708a; font-weight: normal; }
+.menu-btn { position: relative; }
+.menu-btn .dot { position: absolute; top: 2px; right: 6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #f06f8f; color: #fff; font-size: 13px; line-height: 20px; box-shadow: 0 0 0 2px #fffaf0; }
+.menu-btn.glow { animation: glow 1.2s ease-in-out infinite; }
+@keyframes glow { 50% { background: #fff1c4; box-shadow: 0 0 0 3px var(--gold); } }
+.item .love { position: absolute; right: 5px; top: 2px; color: #f06f8f; font-size: 16px; }
+.item.loved { border-color: #f7a8b8; }
+.item.named .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 3px; }
+
+/* 편지 */
+.letter {
+  position: relative; padding: 18px 18px 14px 18px; border-radius: 16px; line-height: 1.7; font-size: 17px;
+  background: repeating-linear-gradient(#fffdf8 0 30px, #f3e7d6 30px 31px); border: 2px solid color-mix(in srgb, var(--c, #f7a8b8) 55%, #fff);
+}
+.letter p { margin: 0 0 6px; padding-right: 74px; }
+.letter .sign { text-align: right; color: var(--text-soft); padding-right: 74px; }
+.letter-face { position: absolute; right: 10px; bottom: 10px; width: 66px; height: 76px; object-fit: contain; }
+.letter-gift { margin: 0; text-align: center; font-size: 17px; }
+
+/* 친구 사진 */
+.polaroid { align-self: center; background: #fff; padding: 12px 12px 6px; border-radius: 6px; box-shadow: var(--shadow); transform: rotate(-2deg); text-align: center; }
+.polaroid .shot { position: relative; width: min(260px, 70vw); height: 170px; border-radius: 4px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; gap: 4px;
+  background: linear-gradient(#cfeefc, color-mix(in srgb, var(--c, #f7a8b8) 35%, #fff) 70%, #bfe6a8 70%); }
+.polaroid .shot img { height: 130px; width: auto; margin-bottom: 8px; }
+.polaroid .p-heart { position: absolute; top: 8px; left: calc(50% - 12px); color: #f06f8f; font-size: 28px; animation: hop 1s ease-in-out infinite; }
+.polaroid p { margin: 8px 0 2px; font-size: 16px; }
+@media (prefers-reduced-motion: reduce) { .menu-btn.glow, .polaroid .p-heart, .talk-face.happy, .talk-face.sad { animation: none; } }
+@media (max-width: 560px) {
+  .res-row, .quest-row { flex-wrap: wrap; }
+  .res-row .shop-btns.col, .quest-row .shop-btns.col { width: 100%; flex-direction: row; justify-content: flex-end; }
+}

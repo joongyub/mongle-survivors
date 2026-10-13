@@ -11,6 +11,15 @@ const STEPS = {
     data.gather = data.gather || { day: null, used: {} };
     return data;
   },
+  // 6단계: 주민 대화·선물 기록, 일일 의뢰가 생김
+  3: data => {
+    for (const r of Object.values(data.residents || {})) {
+      r.friendship ??= 0; r.talkedDay ??= null; r.giftDay ??= null; r.lastTalkAt ??= null;
+    }
+    data.quests = data.quests || { day: null, rerolls: 0, list: [] };
+    data.stats = { soldCoins: 0, talks: 0, gifts: 0, questsDone: 0, ...(data.stats || {}) };
+    return data;
+  },
 };
 
 export function migrate(data) {

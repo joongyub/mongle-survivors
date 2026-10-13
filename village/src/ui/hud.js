@@ -8,6 +8,8 @@ import { toast } from './toast.js';
 import { openBag } from './bag.js';
 import { openSettings } from './settings.js';
 import { openBuildMenu } from './buildMenu.js';
+import { openResidentsPanel } from './residentsPanel.js';
+import { openQuestPanel, readyCount } from './questPanel.js';
 import { buildersBusy, def } from '../core/build.js';
 import { MAX_BUILDERS } from '../data/buildings.js';
 import { sfx } from '../audio.js';
@@ -16,8 +18,8 @@ import { sfx } from '../audio.js';
 const MENU = [
   { id: 'build', ico: '🔨', open: scene => openBuildMenu(scene) },
   { id: 'bag', ico: '🎒', open: () => openBag() },
-  { id: 'residents', ico: '🐾', step: 6 },
-  { id: 'quests', ico: '📜', step: 6 },
+  { id: 'residents', ico: '🐾', open: scene => openResidentsPanel(scene) },
+  { id: 'quests', ico: '📜', open: scene => openQuestPanel(scene) },
   { id: 'book', ico: '📖', step: 9 },
   { id: 'settings', ico: '⚙️', open: () => openSettings() },
 ];
@@ -32,7 +34,7 @@ export function showHud(scene) {
     const b = document.createElement('button');
     b.className = 'menu-btn';
     b.dataset.id = m.id;
-    b.innerHTML = `<span class="ico">${m.ico}</span>${t('menu.' + m.id)}`;
+    b.innerHTML = `<span class="ico">${m.ico}</span>${t('menu.' + m.id)}<span class="dot hidden"></span>`;
     b.onclick = () => {
       sfx('tap');
       if (m.open) m.open(scene);
@@ -93,6 +95,14 @@ export function showHud(scene) {
     chip.classList.toggle('hidden', !held);
     if (held) document.getElementById('holdText').textContent = t('farm.holding', { name: itemName(seedId(held)), n: count(state.inventory, seedId(held)) });
 
+    // 의뢰 버튼 위 숫자: 지금 끝낼 수 있는 의뢰 수
+    const ready = readyCount();
+    const dot = bar.querySelector('[data-id="quests"] .dot');
+    dot.textContent = ready;
+    dot.classList.toggle('hidden', !ready);
+    // 안내 9단계: 의뢰 버튼이 반짝
+    bar.querySelector('[data-id="quests"]').classList.toggle('glow', state.tutorial.step === 9);
+
     // 처음 안내
     const tut = document.getElementById('tutorial');
     const step = state.tutorial.step;
@@ -102,6 +112,7 @@ export function showHud(scene) {
   on('change', refresh);
   on('harvest', () => bump(bar.querySelector('[data-id="bag"]')));
   on('sold', () => bump(document.getElementById('coinText').parentElement));
+  on('coins', () => bump(document.getElementById('coinText').parentElement));
   refresh();
   setInterval(refresh, 5000);
 }
